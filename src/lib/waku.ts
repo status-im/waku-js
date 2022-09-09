@@ -143,10 +143,10 @@ export class WakuNode implements Waku {
   /**
    * Add peer to address book, it will be auto-dialed in the background.
    */
-  addPeerToAddressBook(
+  async addPeerToAddressBook(
     peerId: PeerId | string,
     multiaddrs: Multiaddr[] | string[]
-  ): void {
+  ): Promise<void> {
     let peer;
     if (typeof peerId === "string") {
       peer = peerIdFromString(peerId);
@@ -160,7 +160,7 @@ export class WakuNode implements Waku {
         return addr;
       }
     });
-    this.libp2p.peerStore.addressBook.set(peer, addresses);
+    await this.libp2p.peerStore.addressBook.set(peer, addresses);
   }
 
   async start(): Promise<void> {
