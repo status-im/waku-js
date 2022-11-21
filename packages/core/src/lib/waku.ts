@@ -118,8 +118,11 @@ export class WakuNode implements Waku {
     });
 
     // Trivial handling of discovered peers, to be refined.
-    libp2p.addEventListener("peer:discovery", (evt) => {
+    libp2p.addEventListener("peer:discovery", async (evt) => {
       const peerId = evt.detail.id;
+
+      await libp2p.peerStore.addressBook.add(peerId, evt.detail.multiaddrs);
+
       log(`Found peer ${peerId.toString()}, dialing.`);
       libp2p.dial(peerId).catch((err) => {
         log(`Fail to dial ${peerId}`, err);
