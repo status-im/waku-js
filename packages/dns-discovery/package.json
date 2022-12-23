@@ -73,7 +73,7 @@
     "@waku/interfaces": "*",
     "@multiformats/multiaddr": "^11.0.6",
     "@libp2p/peer-id-factory": "^1.0.15",
-    "chai": "^4.3.4",
+    "chai": "^4.3.7",
     "@rollup/plugin-commonjs": "^24.0.0",
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.0.1",
