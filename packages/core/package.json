@@ -104,9 +104,9 @@
     "uuid": "^9.0.0"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^22.0.0",
-    "@rollup/plugin-json": "^4.1.0",
-    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@rollup/plugin-commonjs": "^24.0.0",
+    "@rollup/plugin-json": "^6.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.1",
     "@types/app-root-path": "^1.2.4",
     "@types/chai": "^4.2.15",
     "@types/debug": "^4.1.7",
@@ -142,7 +142,7 @@
     "prettier": "^2.1.1",
     "process": "^0.11.10",
     "puppeteer": "^13.0.1",
-    "rollup": "^2.75.0",
+    "rollup": "^3.8.1",
     "tail": "^2.2.0",
     "ts-loader": "^9.3.1",
     "ts-node": "^10.9.1",
