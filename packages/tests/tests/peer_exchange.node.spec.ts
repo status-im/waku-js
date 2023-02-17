@@ -157,7 +157,7 @@ describe("Peer Exchange", () => {
     });
   });
 
-  describe("compliance test", async function () {
+  describe.only("compliance test", async function () {
     this.timeout(25_000);
 
     let waku: LightNode;
@@ -198,7 +198,7 @@ describe("Peer Exchange", () => {
               }
             );
           });
-        }, 1000);
+        }, 100);
 
         // the ts-ignores are added ref: https://github.com/libp2p/js-libp2p-interfaces/issues/338#issuecomment-1431643645
         const components = {
