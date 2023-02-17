@@ -1,5 +1,6 @@
 import { bootstrap } from "@libp2p/bootstrap";
 import tests from "@libp2p/interface-peer-discovery-compliance-tests";
+import type { PeerProtocolsChangeData } from "@libp2p/interface-peer-store";
 import {
   Fleet,
   getPredefinedBootstrapNodes,
@@ -181,19 +182,24 @@ describe("Peer Exchange", () => {
           discv5BootstrapNode: enr,
         });
 
-        waku = await createLightNode();
-
-        await waku.start();
         const nwaku2Ma = await nwaku2.getMultiaddrWithId();
 
+        waku = await createLightNode();
+        await waku.start();
         await waku.libp2p.dialProtocol(nwaku2Ma, PeerExchangeCodec);
+        console.log("dialed protocol");
+
         await new Promise<void>((resolve) => {
-          waku.libp2p.peerStore.addEventListener("change:protocols", (evt) => {
+          const cb = (evt: CustomEvent<PeerProtocolsChangeData>): void => {
             if (evt.detail.protocols.includes(PeerExchangeCodec)) {
+              console.log("resolving");
+              waku.libp2p.peerStore.removeEventListener("change:protocols", cb);
               resolve();
             }
-          });
+          };
+          waku.libp2p.peerStore.addEventListener("change:protocols", cb);
         });
+        console.log("waited for remote peer");
 
         // the ts-ignores are added ref: https://github.com/libp2p/js-libp2p-interfaces/issues/338#issuecomment-1431643645
         const components = {
@@ -205,6 +211,8 @@ describe("Peer Exchange", () => {
           // @ts-ignore
           registrar: waku.libp2p.registrar,
         };
+
+        console.log("returning discovery");
 
         return new PeerExchangeDiscovery(components);
       },
