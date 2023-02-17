@@ -186,19 +186,14 @@ describe("Peer Exchange", () => {
         await waku.start();
         const nwaku2Ma = await nwaku2.getMultiaddrWithId();
 
-        setTimeout(async () => {
-          await waku.libp2p.dialProtocol(nwaku2Ma, PeerExchangeCodec);
-          await new Promise<void>((resolve) => {
-            waku.libp2p.peerStore.addEventListener(
-              "change:protocols",
-              (evt) => {
-                if (evt.detail.protocols.includes(PeerExchangeCodec)) {
-                  resolve();
-                }
-              }
-            );
+        await waku.libp2p.dialProtocol(nwaku2Ma, PeerExchangeCodec);
+        await new Promise<void>((resolve) => {
+          waku.libp2p.peerStore.addEventListener("change:protocols", (evt) => {
+            if (evt.detail.protocols.includes(PeerExchangeCodec)) {
+              resolve();
+            }
           });
-        }, 100);
+        });
 
         // the ts-ignores are added ref: https://github.com/libp2p/js-libp2p-interfaces/issues/338#issuecomment-1431643645
         const components = {
