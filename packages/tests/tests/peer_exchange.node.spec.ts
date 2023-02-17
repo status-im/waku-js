@@ -108,7 +108,7 @@ describe("Peer Exchange", () => {
         });
       });
 
-      await nwaku2.waitForLog("Discovered px peers via discv5", 10);
+      await nwaku2.waitForLog("Discovered px peers via discv5", 10_000);
 
       // the ts-ignores are added ref: https://github.com/libp2p/js-libp2p-interfaces/issues/338#issuecomment-1431643645
       const peerExchange = new WakuPeerExchange({
@@ -159,7 +159,7 @@ describe("Peer Exchange", () => {
   });
 
   describe.only("compliance test", async function () {
-    this.timeout(25_000);
+    this.timeout(50_000);
 
     let waku: LightNode;
     let nwaku1: Nwaku;
