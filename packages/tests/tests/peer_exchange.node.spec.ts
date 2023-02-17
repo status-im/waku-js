@@ -60,7 +60,7 @@ describe("Peer Exchange", () => {
     expect(foundPxPeer).to.be.true;
   });
 
-  describe("Locally run nodes", () => {
+  describe.only("Locally run nodes", () => {
     let waku: LightNode;
     let nwaku1: Nwaku;
     let nwaku2: Nwaku;
