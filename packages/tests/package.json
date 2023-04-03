@@ -38,18 +38,13 @@
     "fix": "run-s fix:*",
     "fix:prettier": "prettier . --write",
     "fix:lint": "eslint src tests --fix",
-    "pretest": "run-s pretest:*",
-    "pretest:1-init-git-submodules": "[ -f '../../nwaku/build/wakunode2' ] || git submodule update --init --recursive",
-    "pretest:2-build-nwaku": "[ -f '../../nwaku/build/wakunode2' ] || run-s nwaku:build",
-    "nwaku:build": "(PROC=$(nproc --all 2>/dev/null || echo 2); cd ../../nwaku; make -j$PROC update; NIMFLAGS=\"-d:chronicles_colors=off\" make -j$PROC wakunode2)",
-    "nwaku:force-build": "(cd ../../nwaku && rm -rf ./build/ ./vendor) && run-s nwaku:build",
     "check": "run-s check:*",
     "check:prettier": "prettier . --list-different",
     "check:lint": "eslint src tests",
     "check:spelling": "cspell \"{README.md,{tests,src}/**/*.ts}\"",
     "check:tsc": "tsc -p tsconfig.dev.json",
-    "test": "run-s test:*",
-    "test:node": "TS_NODE_PROJECT=./tsconfig.dev.json mocha",
+    "pretest": "if docker inspect ${WAKUNODE_IMAGE} > /dev/null 2>&1; then echo 'Using local image'; else docker pull ${WAKUNODE_IMAGE:-statusteam/nim-waku:v0.16.0} && echo 'Image pulled'; fi",
+    "test": "TS_NODE_PROJECT=./tsconfig.dev.json mocha",
     "reset-hard": "git clean -dfx -e .idea && git reset --hard && npm i && npm run build"
   },
   "engines": {
@@ -65,9 +60,11 @@
     "debug": "^4.3.4",
     "p-timeout": "^6.1.0",
     "portfinder": "^1.0.32",
-    "tail": "^2.2.6"
+    "tail": "^2.2.6",
+    "dockerode": "^3.3.5"
   },
   "devDependencies": {
+    "@types/dockerode": "^3.3.15",
     "@libp2p/bootstrap": "^6.0.3",
     "@libp2p/components": "^3.1.1",
     "@libp2p/interface-peer-discovery-compliance-tests": "^2.0.5",

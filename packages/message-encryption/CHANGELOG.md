@@ -7,72 +7,117 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Dependencies
 
-* The following workspace dependencies were updated
-  * dependencies
-    * @waku/core bumped from 0.0.11 to 0.0.12
-    * @waku/interfaces bumped from 0.0.8 to 0.0.9
+- The following workspace dependencies were updated
+  - dependencies
+    - @waku/core bumped from 0.0.11 to 0.0.12
+    - @waku/interfaces bumped from 0.0.8 to 0.0.9
 
 ### Dependencies
 
-* The following workspace dependencies were updated
-  * dependencies
-    * @waku/core bumped from 0.0.12 to 0.0.13
-    * @waku/interfaces bumped from 0.0.9 to 0.0.10
-    * @waku/proto bumped from 0.0.3 to 0.0.4
-    * @waku/utils bumped from 0.0.2 to 0.0.3
+- The following workspace dependencies were updated
+  - dependencies
+    - @waku/core bumped from 0.0.12 to 0.0.13
+    - @waku/interfaces bumped from 0.0.9 to 0.0.10
+    - @waku/proto bumped from 0.0.3 to 0.0.4
+    - @waku/utils bumped from 0.0.2 to 0.0.3
 
 ### Dependencies
 
-* The following workspace dependencies were updated
-  * dependencies
-    * @waku/core bumped from 0.0.14 to 0.0.15
+- The following workspace dependencies were updated
+  - dependencies
+    - @waku/core bumped from 0.0.14 to 0.0.15
 
 ### Dependencies
 
-* The following workspace dependencies were updated
-  * dependencies
-    * @waku/core bumped from 0.0.15 to 0.0.16
-    * @waku/interfaces bumped from 0.0.10 to 0.0.11
-    * @waku/utils bumped from 0.0.3 to 0.0.4
+- The following workspace dependencies were updated
+  - dependencies
+    - @waku/core bumped from 0.0.15 to 0.0.16
+    - @waku/interfaces bumped from 0.0.10 to 0.0.11
+    - @waku/utils bumped from 0.0.3 to 0.0.4
 
 ## [0.0.10](https://github.com/waku-org/js-waku/compare/message-encryption-v0.0.9...message-encryption-v0.0.10) (2023-03-16)
 
-
 ### ⚠ BREAKING CHANGES
 
-* add exports map to @waku/utils ([#1201](https://github.com/waku-org/js-waku/issues/1201))
-* enable encoding of `meta` field
-* expose pubsub topic in `IDecodedMessage`
-* update message.proto: payload and content topic are always defined
-* bump typescript
+- add exports map to @waku/utils ([#1201](https://github.com/waku-org/js-waku/issues/1201))
+- enable encoding of `meta` field
+- expose pubsub topic in `IDecodedMessage`
+- update message.proto: payload and content topic are always defined
+- bump typescript
 
 ### Features
 
-* Enable encoding of `meta` field ([bd983ea](https://github.com/waku-org/js-waku/commit/bd983ea48ee73fda5a7137d5ef681965aeabb4a5))
-* Export `Decoder`, `Encoder` and `DecodedMessage` types from root ([da1b18d](https://github.com/waku-org/js-waku/commit/da1b18d9956259af4cb2e6f7c1f06de52b6ec3ac)), closes [#1010](https://github.com/waku-org/js-waku/issues/1010)
-* Expose pubsub topic in `IDecodedMessage` ([628ac50](https://github.com/waku-org/js-waku/commit/628ac50d7104ec3c1dff44db58077a85db6b6aa1)), closes [#1208](https://github.com/waku-org/js-waku/issues/1208)
-
+- Enable encoding of `meta` field ([bd983ea](https://github.com/waku-org/js-waku/commit/bd983ea48ee73fda5a7137d5ef681965aeabb4a5))
+- Export `Decoder`, `Encoder` and `DecodedMessage` types from root ([da1b18d](https://github.com/waku-org/js-waku/commit/da1b18d9956259af4cb2e6f7c1f06de52b6ec3ac)), closes [#1010](https://github.com/waku-org/js-waku/issues/1010)
+- Expose pubsub topic in `IDecodedMessage` ([628ac50](https://github.com/waku-org/js-waku/commit/628ac50d7104ec3c1dff44db58077a85db6b6aa1)), closes [#1208](https://github.com/waku-org/js-waku/issues/1208)
 
 ### Bug Fixes
 
-* Prettier and cspell ignore CHANGELOG ([#1235](https://github.com/waku-org/js-waku/issues/1235)) ([4d7b3e3](https://github.com/waku-org/js-waku/commit/4d7b3e39e6761afaf5d05a13cc4b3c23e15f9bd5))
-
+- Prettier and cspell ignore CHANGELOG ([#1235](https://github.com/waku-org/js-waku/issues/1235)) ([4d7b3e3](https://github.com/waku-org/js-waku/commit/4d7b3e39e6761afaf5d05a13cc4b3c23e15f9bd5))
 
 ### Miscellaneous Chores
 
-* Add exports map to @waku/utils ([#1201](https://github.com/waku-org/js-waku/issues/1201)) ([a30b2bd](https://github.com/waku-org/js-waku/commit/a30b2bd747dedeef69b46cfafb88898ba35d8f67))
-* Bump typescript ([12d86e6](https://github.com/waku-org/js-waku/commit/12d86e6abcc68e27c39ca86b4f0dc2b68cdd6000))
-* Update message.proto: payload and content topic are always defined ([5cf8ed2](https://github.com/waku-org/js-waku/commit/5cf8ed2030c9efbc4c4b66aa801827482c1e4249))
-
+- Add exports map to @waku/utils ([#1201](https://github.com/waku-org/js-waku/issues/1201)) ([a30b2bd](https://github.com/waku-org/js-waku/commit/a30b2bd747dedeef69b46cfafb88898ba35d8f67))
+- Bump typescript ([12d86e6](https://github.com/waku-org/js-waku/commit/12d86e6abcc68e27c39ca86b4f0dc2b68cdd6000))
+- Update message.proto: payload and content topic are always defined ([5cf8ed2](https://github.com/waku-org/js-waku/commit/5cf8ed2030c9efbc4c4b66aa801827482c1e4249))
 
 ### Dependencies
 
-* The following workspace dependencies were updated
-  * dependencies
-    * @waku/core bumped from * to 0.0.11
-    * @waku/interfaces bumped from * to 0.0.8
-    * @waku/proto bumped from * to 0.0.3
-    * @waku/utils bumped from * to 0.0.2
+- The following workspace dependencies were updated
+  - dependencies
+    - @waku/core bumped from 0.0.12 to 0.0.13
+    - @waku/interfaces bumped from 0.0.9 to 0.0.10
+    - @waku/proto bumped from 0.0.3 to 0.0.4
+    - @waku/utils bumped from 0.0.2 to 0.0.3
+
+### Dependencies
+
+- The following workspace dependencies were updated
+  - dependencies
+    - @waku/core bumped from 0.0.14 to 0.0.15
+
+### Dependencies
+
+- The following workspace dependencies were updated
+  - dependencies
+    - @waku/core bumped from 0.0.15 to 0.0.16
+    - @waku/interfaces bumped from 0.0.10 to 0.0.11
+    - @waku/utils bumped from 0.0.3 to 0.0.4
+
+## [0.0.10](https://github.com/waku-org/js-waku/compare/message-encryption-v0.0.9...message-encryption-v0.0.10) (2023-03-16)
+
+### ⚠ BREAKING CHANGES
+
+- add exports map to @waku/utils ([#1201](https://github.com/waku-org/js-waku/issues/1201))
+- enable encoding of `meta` field
+- expose pubsub topic in `IDecodedMessage`
+- update message.proto: payload and content topic are always defined
+- bump typescript
+
+### Features
+
+- Enable encoding of `meta` field ([bd983ea](https://github.com/waku-org/js-waku/commit/bd983ea48ee73fda5a7137d5ef681965aeabb4a5))
+- Export `Decoder`, `Encoder` and `DecodedMessage` types from root ([da1b18d](https://github.com/waku-org/js-waku/commit/da1b18d9956259af4cb2e6f7c1f06de52b6ec3ac)), closes [#1010](https://github.com/waku-org/js-waku/issues/1010)
+- Expose pubsub topic in `IDecodedMessage` ([628ac50](https://github.com/waku-org/js-waku/commit/628ac50d7104ec3c1dff44db58077a85db6b6aa1)), closes [#1208](https://github.com/waku-org/js-waku/issues/1208)
+
+### Bug Fixes
+
+- Prettier and cspell ignore CHANGELOG ([#1235](https://github.com/waku-org/js-waku/issues/1235)) ([4d7b3e3](https://github.com/waku-org/js-waku/commit/4d7b3e39e6761afaf5d05a13cc4b3c23e15f9bd5))
+
+### Miscellaneous Chores
+
+- Add exports map to @waku/utils ([#1201](https://github.com/waku-org/js-waku/issues/1201)) ([a30b2bd](https://github.com/waku-org/js-waku/commit/a30b2bd747dedeef69b46cfafb88898ba35d8f67))
+- Bump typescript ([12d86e6](https://github.com/waku-org/js-waku/commit/12d86e6abcc68e27c39ca86b4f0dc2b68cdd6000))
+- Update message.proto: payload and content topic are always defined ([5cf8ed2](https://github.com/waku-org/js-waku/commit/5cf8ed2030c9efbc4c4b66aa801827482c1e4249))
+
+### Dependencies
+
+- The following workspace dependencies were updated
+  - dependencies
+    - @waku/core bumped from \* to 0.0.11
+    - @waku/interfaces bumped from \* to 0.0.8
+    - @waku/proto bumped from \* to 0.0.3
+    - @waku/utils bumped from \* to 0.0.2
 
 ## [Unreleased]
 

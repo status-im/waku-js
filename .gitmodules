@@ -1,3 +1,0 @@
-[submodule "nim-waku"]
-	path = nwaku
-	url = https://github.com/status-im/nim-waku.git

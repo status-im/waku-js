@@ -7,120 +7,154 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.0.16](https://github.com/waku-org/js-waku/compare/core-v0.0.15...core-v0.0.16) (2023-04-03)
 
-
 ### ⚠ BREAKING CHANGES
 
-* add and implement IReceiver ([#1219](https://github.com/waku-org/js-waku/issues/1219))
+- add and implement IReceiver ([#1219](https://github.com/waku-org/js-waku/issues/1219))
 
 ### Features
 
-* Add and implement IReceiver ([#1219](https://github.com/waku-org/js-waku/issues/1219)) ([e11e5b4](https://github.com/waku-org/js-waku/commit/e11e5b4870aede7813b3ee4b60f5e625f6eac5a2))
-
+- Add and implement IReceiver ([#1219](https://github.com/waku-org/js-waku/issues/1219)) ([e11e5b4](https://github.com/waku-org/js-waku/commit/e11e5b4870aede7813b3ee4b60f5e625f6eac5a2))
 
 ### Dependencies
 
-* The following workspace dependencies were updated
-  * dependencies
-    * @waku/interfaces bumped from 0.0.10 to 0.0.11
-    * @waku/utils bumped from 0.0.3 to 0.0.4
+- The following workspace dependencies were updated
+  - dependencies
+    - @waku/interfaces bumped from 0.0.10 to 0.0.11
+    - @waku/utils bumped from 0.0.3 to 0.0.4
 
 ## [0.0.15](https://github.com/waku-org/js-waku/compare/core-v0.0.14...core-v0.0.15) (2023-03-31)
 
-
 ### Bug Fixes
 
-* Update @waku/core changelog ([#1287](https://github.com/waku-org/js-waku/issues/1287)) ([5def8dd](https://github.com/waku-org/js-waku/commit/5def8ddb4d9a43424bf2124a521d618368ffa9dc))
+- Update @waku/core changelog ([#1287](https://github.com/waku-org/js-waku/issues/1287)) ([5def8dd](https://github.com/waku-org/js-waku/commit/5def8ddb4d9a43424bf2124a521d618368ffa9dc))
 
 ## [0.0.14](https://github.com/waku-org/js-waku/compare/core-v0.0.12...core-v0.0.13) (2023-03-29)
 
 ### Features
+
 Nothing. Was published by mistake and does not contain valid code. Same as 0.0.13
 
 ## [0.0.13](https://github.com/waku-org/js-waku/compare/core-v0.0.12...core-v0.0.13) (2023-03-24)
 
 ### Bug Fixes
 
-* **utils:** Include all ts files ([#1267](https://github.com/waku-org/js-waku/issues/1267)) ([c284159](https://github.com/waku-org/js-waku/commit/c284159ac8eab5bed2313fa5bc7fbea0e83d390f))
-
+- **utils:** Include all ts files ([#1267](https://github.com/waku-org/js-waku/issues/1267)) ([c284159](https://github.com/waku-org/js-waku/commit/c284159ac8eab5bed2313fa5bc7fbea0e83d390f))
 
 ### Dependencies
 
-* The following workspace dependencies were updated
-  * dependencies
-    * @waku/interfaces bumped from 0.0.9 to 0.0.10
-    * @waku/proto bumped from 0.0.3 to 0.0.4
-    * @waku/utils bumped from 0.0.2 to 0.0.3
+- The following workspace dependencies were updated
+  - dependencies
+    - @waku/interfaces bumped from 0.0.9 to 0.0.10
+    - @waku/proto bumped from 0.0.3 to 0.0.4
+    - @waku/utils bumped from 0.0.2 to 0.0.3
 
 ## [0.0.12](https://github.com/waku-org/js-waku/compare/core-v0.0.11...core-v0.0.12) (2023-03-23)
 
-
 ### ⚠ BREAKING CHANGES
 
-* use ISender and deprecate Light Push .push ([#1217](https://github.com/waku-org/js-waku/issues/1217))
+- add and implement IReceiver ([#1219](https://github.com/waku-org/js-waku/issues/1219))
 
 ### Features
 
-* Add getActiveSubscriptions method ([#1249](https://github.com/waku-org/js-waku/issues/1249)) ([45284db](https://github.com/waku-org/js-waku/commit/45284db963d6d4c90a014391551604c236906b88))
-* Use ISender and deprecate Light Push .push ([#1217](https://github.com/waku-org/js-waku/issues/1217)) ([0f6a594](https://github.com/waku-org/js-waku/commit/0f6a59464426b94dd14841de075ff10a4ad52e33))
-
+- Add and implement IReceiver ([#1219](https://github.com/waku-org/js-waku/issues/1219)) ([e11e5b4](https://github.com/waku-org/js-waku/commit/e11e5b4870aede7813b3ee4b60f5e625f6eac5a2))
 
 ### Dependencies
 
-* The following workspace dependencies were updated
-  * dependencies
-    * @waku/interfaces bumped from 0.0.8 to 0.0.9
+- The following workspace dependencies were updated
+  - dependencies
+    - @waku/interfaces bumped from 0.0.10 to 0.0.11
+    - @waku/utils bumped from 0.0.3 to 0.0.4
 
-## [0.0.11](https://github.com/waku-org/js-waku/compare/core-v0.0.10...core-v0.0.11) (2023-03-16)
-
-
-### ⚠ BREAKING CHANGES
-
-* add custom events to Relay and make observers private ([#1213](https://github.com/waku-org/js-waku/issues/1213))
-* add exports map to @waku/utils ([#1201](https://github.com/waku-org/js-waku/issues/1201))
-* enable encoding of `meta` field
-* expose pubsub topic in `IDecodedMessage`
-* update store.proto
-* update message.proto: payload and content topic are always defined
-* ConnectionManager and KeepAliveManager ([#1135](https://github.com/waku-org/js-waku/issues/1135))
-* bump typescript
-* bump all prod dependencies
-* bump libp2p dependencies
-
-### Features
-
-* Add custom events to Relay and make observers private ([#1213](https://github.com/waku-org/js-waku/issues/1213)) ([275b166](https://github.com/waku-org/js-waku/commit/275b16641e620956a5f8ebbb3a8c4156149d489e))
-* Codec as a property of the protocol implementations ([a5ff788](https://github.com/waku-org/js-waku/commit/a5ff788eed419556e11319f22ca9e3109c81df92))
-* ConnectionManager and KeepAliveManager ([#1135](https://github.com/waku-org/js-waku/issues/1135)) ([24c24cc](https://github.com/waku-org/js-waku/commit/24c24cc27d83ec12de45ef3cf3d00f6eb817e4ca))
-* Enable encoding of `meta` field ([bd983ea](https://github.com/waku-org/js-waku/commit/bd983ea48ee73fda5a7137d5ef681965aeabb4a5))
-* Export `Decoder`, `Encoder` and `DecodedMessage` types from root ([da1b18d](https://github.com/waku-org/js-waku/commit/da1b18d9956259af4cb2e6f7c1f06de52b6ec3ac)), closes [#1010](https://github.com/waku-org/js-waku/issues/1010)
-* Expose pubsub topic in `IDecodedMessage` ([628ac50](https://github.com/waku-org/js-waku/commit/628ac50d7104ec3c1dff44db58077a85db6b6aa1)), closes [#1208](https://github.com/waku-org/js-waku/issues/1208)
-* **relay:** Validate waku message at gossip layer ([9684737](https://github.com/waku-org/js-waku/commit/96847374d6c61f3372a16185d9fff93e582505bb))
-
+## [0.0.15](https://github.com/waku-org/js-waku/compare/core-v0.0.14...core-v0.0.15) (2023-03-31)
 
 ### Bug Fixes
 
-* Add payload to relay ping messages to avoid poor relay peer scoring ([560c393](https://github.com/waku-org/js-waku/commit/560c39366259f9902cac7f2afd0d301c49e13f4c))
-* Prettier and cspell ignore CHANGELOG ([#1235](https://github.com/waku-org/js-waku/issues/1235)) ([4d7b3e3](https://github.com/waku-org/js-waku/commit/4d7b3e39e6761afaf5d05a13cc4b3c23e15f9bd5))
-* Remove initialising peer-exchange while creating a node ([#1158](https://github.com/waku-org/js-waku/issues/1158)) ([1b41569](https://github.com/waku-org/js-waku/commit/1b4156902387ea35b24b3d6f5d22e4635ea8cf18))
+- Update @waku/core changelog ([#1287](https://github.com/waku-org/js-waku/issues/1287)) ([5def8dd](https://github.com/waku-org/js-waku/commit/5def8ddb4d9a43424bf2124a521d618368ffa9dc))
 
+## [0.0.14](https://github.com/waku-org/js-waku/compare/core-v0.0.12...core-v0.0.13) (2023-03-29)
 
-### Miscellaneous Chores
+### Features
 
-* Add exports map to @waku/utils ([#1201](https://github.com/waku-org/js-waku/issues/1201)) ([a30b2bd](https://github.com/waku-org/js-waku/commit/a30b2bd747dedeef69b46cfafb88898ba35d8f67))
-* Bump all prod dependencies ([88cc76d](https://github.com/waku-org/js-waku/commit/88cc76d2b811e1fa4460207f38704ecfe18fb260))
-* Bump libp2p dependencies ([803ae7b](https://github.com/waku-org/js-waku/commit/803ae7bd8ed3de665026446c23cde90e7eba9d36))
-* Bump typescript ([12d86e6](https://github.com/waku-org/js-waku/commit/12d86e6abcc68e27c39ca86b4f0dc2b68cdd6000))
-* Update message.proto: payload and content topic are always defined ([5cf8ed2](https://github.com/waku-org/js-waku/commit/5cf8ed2030c9efbc4c4b66aa801827482c1e4249))
-* Update store.proto ([967e6ff](https://github.com/waku-org/js-waku/commit/967e6ffc7ec6f780094e29599c47b723fa222dcc))
+Nothing. Was published by mistake and does not contain valid code. Same as 0.0.13
 
+## [0.0.13](https://github.com/waku-org/js-waku/compare/core-v0.0.12...core-v0.0.13) (2023-03-24)
+
+### Bug Fixes
+
+- **utils:** Include all ts files ([#1267](https://github.com/waku-org/js-waku/issues/1267)) ([c284159](https://github.com/waku-org/js-waku/commit/c284159ac8eab5bed2313fa5bc7fbea0e83d390f))
 
 ### Dependencies
 
-* The following workspace dependencies were updated
-  * dependencies
-    * @waku/interfaces bumped from * to 0.0.8
-    * @waku/proto bumped from * to 0.0.3
-    * @waku/utils bumped from * to 0.0.2
+- The following workspace dependencies were updated
+  - dependencies
+    - @waku/interfaces bumped from 0.0.9 to 0.0.10
+    - @waku/proto bumped from 0.0.3 to 0.0.4
+    - @waku/utils bumped from 0.0.2 to 0.0.3
+
+## [0.0.12](https://github.com/waku-org/js-waku/compare/core-v0.0.11...core-v0.0.12) (2023-03-23)
+
+### ⚠ BREAKING CHANGES
+
+- use ISender and deprecate Light Push .push ([#1217](https://github.com/waku-org/js-waku/issues/1217))
+
+### Features
+
+- Add getActiveSubscriptions method ([#1249](https://github.com/waku-org/js-waku/issues/1249)) ([45284db](https://github.com/waku-org/js-waku/commit/45284db963d6d4c90a014391551604c236906b88))
+- Use ISender and deprecate Light Push .push ([#1217](https://github.com/waku-org/js-waku/issues/1217)) ([0f6a594](https://github.com/waku-org/js-waku/commit/0f6a59464426b94dd14841de075ff10a4ad52e33))
+
+### Dependencies
+
+- The following workspace dependencies were updated
+  - dependencies
+    - @waku/interfaces bumped from 0.0.8 to 0.0.9
+
+## [0.0.11](https://github.com/waku-org/js-waku/compare/core-v0.0.10...core-v0.0.11) (2023-03-16)
+
+### ⚠ BREAKING CHANGES
+
+- add custom events to Relay and make observers private ([#1213](https://github.com/waku-org/js-waku/issues/1213))
+- add exports map to @waku/utils ([#1201](https://github.com/waku-org/js-waku/issues/1201))
+- enable encoding of `meta` field
+- expose pubsub topic in `IDecodedMessage`
+- update store.proto
+- update message.proto: payload and content topic are always defined
+- ConnectionManager and KeepAliveManager ([#1135](https://github.com/waku-org/js-waku/issues/1135))
+- bump typescript
+- bump all prod dependencies
+- bump libp2p dependencies
+
+### Features
+
+- Add custom events to Relay and make observers private ([#1213](https://github.com/waku-org/js-waku/issues/1213)) ([275b166](https://github.com/waku-org/js-waku/commit/275b16641e620956a5f8ebbb3a8c4156149d489e))
+- Codec as a property of the protocol implementations ([a5ff788](https://github.com/waku-org/js-waku/commit/a5ff788eed419556e11319f22ca9e3109c81df92))
+- ConnectionManager and KeepAliveManager ([#1135](https://github.com/waku-org/js-waku/issues/1135)) ([24c24cc](https://github.com/waku-org/js-waku/commit/24c24cc27d83ec12de45ef3cf3d00f6eb817e4ca))
+- Enable encoding of `meta` field ([bd983ea](https://github.com/waku-org/js-waku/commit/bd983ea48ee73fda5a7137d5ef681965aeabb4a5))
+- Export `Decoder`, `Encoder` and `DecodedMessage` types from root ([da1b18d](https://github.com/waku-org/js-waku/commit/da1b18d9956259af4cb2e6f7c1f06de52b6ec3ac)), closes [#1010](https://github.com/waku-org/js-waku/issues/1010)
+- Expose pubsub topic in `IDecodedMessage` ([628ac50](https://github.com/waku-org/js-waku/commit/628ac50d7104ec3c1dff44db58077a85db6b6aa1)), closes [#1208](https://github.com/waku-org/js-waku/issues/1208)
+- **relay:** Validate waku message at gossip layer ([9684737](https://github.com/waku-org/js-waku/commit/96847374d6c61f3372a16185d9fff93e582505bb))
+
+### Bug Fixes
+
+- Add payload to relay ping messages to avoid poor relay peer scoring ([560c393](https://github.com/waku-org/js-waku/commit/560c39366259f9902cac7f2afd0d301c49e13f4c))
+- Prettier and cspell ignore CHANGELOG ([#1235](https://github.com/waku-org/js-waku/issues/1235)) ([4d7b3e3](https://github.com/waku-org/js-waku/commit/4d7b3e39e6761afaf5d05a13cc4b3c23e15f9bd5))
+- Remove initialising peer-exchange while creating a node ([#1158](https://github.com/waku-org/js-waku/issues/1158)) ([1b41569](https://github.com/waku-org/js-waku/commit/1b4156902387ea35b24b3d6f5d22e4635ea8cf18))
+
+### Miscellaneous Chores
+
+- Add exports map to @waku/utils ([#1201](https://github.com/waku-org/js-waku/issues/1201)) ([a30b2bd](https://github.com/waku-org/js-waku/commit/a30b2bd747dedeef69b46cfafb88898ba35d8f67))
+- Bump all prod dependencies ([88cc76d](https://github.com/waku-org/js-waku/commit/88cc76d2b811e1fa4460207f38704ecfe18fb260))
+- Bump libp2p dependencies ([803ae7b](https://github.com/waku-org/js-waku/commit/803ae7bd8ed3de665026446c23cde90e7eba9d36))
+- Bump typescript ([12d86e6](https://github.com/waku-org/js-waku/commit/12d86e6abcc68e27c39ca86b4f0dc2b68cdd6000))
+- Update message.proto: payload and content topic are always defined ([5cf8ed2](https://github.com/waku-org/js-waku/commit/5cf8ed2030c9efbc4c4b66aa801827482c1e4249))
+- Update store.proto ([967e6ff](https://github.com/waku-org/js-waku/commit/967e6ffc7ec6f780094e29599c47b723fa222dcc))
+
+### Dependencies
+
+- The following workspace dependencies were updated
+  - dependencies
+    - @waku/interfaces bumped from \* to 0.0.8
+    - @waku/proto bumped from \* to 0.0.3
+    - @waku/utils bumped from \* to 0.0.2
 
 ## [Unreleased]
 

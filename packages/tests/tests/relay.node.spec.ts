@@ -357,7 +357,8 @@ describe("Waku Relay [node only]", () => {
     });
 
     afterEach(async function () {
-      !!nwaku && nwaku.stop();
+      !!nwaku &&
+        nwaku.stop().catch((e) => console.log("Nwaku failed to stop", e));
       !!waku && waku.stop().catch((e) => console.log("Waku failed to stop", e));
     });
 
@@ -427,7 +428,8 @@ describe("Waku Relay [node only]", () => {
       let nwaku: Nwaku;
 
       afterEach(async function () {
-        !!nwaku && nwaku.stop();
+        !!nwaku &&
+          nwaku.stop().catch((e) => console.log("Nwaku failed to stop", e));
         !!waku1 &&
           waku1.stop().catch((e) => console.log("Waku failed to stop", e));
         !!waku2 &&

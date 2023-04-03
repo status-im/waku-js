@@ -114,7 +114,8 @@
     "webfonts",
     "websockets",
     "wifi",
-    "xsalsa20"
+    "xsalsa20",
+    "statusteam"
   ],
   "flagWords": [],
   "ignorePaths": [

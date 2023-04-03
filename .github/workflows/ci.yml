@@ -9,7 +9,6 @@ on:
   pull_request:
 
 env:
-  NWAKU_VERSION: "v0.16.0"
   NODE_JS: "18"
 
 jobs:
@@ -57,26 +56,18 @@ jobs:
 
   node:
     runs-on: ubuntu-latest
+    env:
+      WAKUNODE_IMAGE: "statusteam/nim-waku:v0.16.0"
     steps:
       - uses: actions/checkout@v3
-      - name: Get nwaku
-        shell: bash
-        run: |
-          mkdir -p nwaku/build
-          cd nwaku
-          wget "https://github.com/status-im/nwaku/releases/download/${NWAKU_VERSION}/nim-waku-ubuntu-latest.tar.gz"
-          tar xavf nim-waku-ubuntu-latest.tar.gz
-      - name: Ensure wakunode2 is ready
-        shell: bash
-        run: |
-          uname -a
-          cd nwaku/build
-          ./wakunode2 --help
+
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_JS }}
+
       - uses: ./.github/actions/npm
       - run: npm run build:esm
+      - run: npm run pretest
       - run: npm run test:node
         env:
           DEBUG: ""
@@ -95,34 +86,14 @@ jobs:
           name: nwaku-logs
           path: packages/tests/log/
 
-  node_with_go_waku:
+  node_with_go_waku_master:
     runs-on: ubuntu-latest
     env:
-      GO_WAKU_VERSION: "0.5.2"
-      WAKU_SERVICE_NODE_DIR: ../../go-waku
-      WAKU_SERVICE_NODE_BIN: ./waku
+      WAKUNODE_IMAGE: "statusteam/go-waku:latest"
       WAKU_SERVICE_NODE_PARAMS: "--min-relay-peers-to-publish=0" # Can be removed once https://github.com/status-im/nwaku/issues/1004 is done
       DEBUG: "waku*"
     steps:
       - uses: actions/checkout@v3
-
-      - name: Get go-waku
-        shell: bash
-        run: |
-          pwd
-          mkdir -p go-waku/
-          cd go-waku
-          wget "https://github.com/status-im/go-waku/releases/download/v${GO_WAKU_VERSION}/gowaku-${GO_WAKU_VERSION}-x86_64.deb"
-          sudo apt install ./gowaku-${GO_WAKU_VERSION}-x86_64.deb
-          cp $(which waku) ./
-
-      - name: Ensure go-waku is ready
-        shell: bash
-        run: |
-          uname -a
-          cd packages/core
-          cd "${WAKU_SERVICE_NODE_DIR}"
-          "${WAKU_SERVICE_NODE_BIN}" --version
 
       - name: Install NodeJS
         uses: actions/setup-node@v3
@@ -131,6 +102,7 @@ jobs:
 
       - uses: ./.github/actions/npm
       - run: npm run build:esm
+      - run: npm run pretest
       - run: npm run test:node
         env:
           DEBUG: "waku:nwaku*,waku:test*"
@@ -153,38 +125,17 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DEBUG: "waku*"
+      WAKUNODE_IMAGE: "statusteam/nim-waku:deploy-wakuv2-test"
     steps:
       - uses: actions/checkout@v3
-        with:
-          submodules: "recursive"
-          fetch-depth: 0
 
-      - name: Install NodeJS
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_JS }}
 
-      - name: Pull nwaku origin/master
-        run: |
-          cd nwaku
-          git fetch origin
-          git checkout origin/master
-
       - uses: ./.github/actions/npm
-
-      - name: build nwaku
-        run: |
-          cd packages/tests
-          npm run nwaku:force-build
-
-      - name: Ensure wakunode2 is ready
-        shell: bash
-        run: |
-          uname -a
-          cd nwaku
-          ./build/wakunode2 --help
-
       - run: npm run build:esm
+      - run: npm run pretest
       - run: npm run test:node
         env:
           DEBUG: "waku:nwaku*,waku:test*"

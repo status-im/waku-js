@@ -13,7 +13,7 @@ describe("Wait for remote peer", function () {
 
   afterEach(async function () {
     if (nwaku) {
-      nwaku.stop();
+      nwaku.stop().catch((e) => console.log("Nwaku failed to stop", e));
       nwaku = undefined;
     }
     waku1?.stop().catch((e) => console.log("Waku failed to stop", e));

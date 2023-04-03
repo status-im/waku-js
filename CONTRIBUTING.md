@@ -11,23 +11,21 @@ This project board is to prioritize the work of core contributors so do not be d
 Do note that we have a [CI](./.github/workflows/ci.yml) powered by GitHub Action.
 To help ensure your PR passes, just run before committing:
 
- - `npm run fix`: To format your code,
- - `npm run test`: To run all tests, including lint checks.
-
+- `npm run fix`: To format your code,
+- `npm run check`: To check your code for linting errors,
+- `npm run test`: To run all tests
 
 ## Build & Test
 
 To build and test this repository, you need:
-  
-  - [Node.js & npm](https://nodejs.org/en/).
-  - Chrome (for browser testing).
-  - g++ & make (to build nim-waku)
+
+- [Node.js & npm](https://nodejs.org/en/).
+- Chrome (for browser testing).
 
 To ensure interoperability with [nim-waku](https://github.com/status-im/nim-waku/), some tests are run against a nim-waku node.
-This is why `nim-waku` is present as a [git submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules), which itself contain several submodules.
-At this stage, it is not possible to exclude nim-waku tests, hence `git submodule update --init --recursive` is run before testing (see [`pretest` script](https://github.com/status-im/js-waku/blob/master/package.json)).
+This is why the relevant docker images for the node is pulled as part of the `pretest` script that runs before `npm run test`.
 
-If you do not want to run `npm run test`, you can still build nim-waku by running `npm run pretest`.
+If you do not want to run `npm run test`, you can still pull the relevant nim-waku docker image by running `npm run pretest`.
 
 Note that we run tests in both NodeJS and browser environments (using [karma](https://karma-runner.github.io/)).
 Files named `*.node.spec.ts` are only run in NodeJS environment;
@@ -62,4 +60,3 @@ Commit messages should never contain any `@` mentions (usernames prefixed with "
 
 Please refer to the [Git manual](https://git-scm.com/doc) for more information
 about Git.
-
