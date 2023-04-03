@@ -44,7 +44,8 @@
     "check:spelling": "cspell \"{README.md,{tests,src}/**/*.ts}\"",
     "check:tsc": "tsc -p tsconfig.dev.json",
     "pretest": "if docker inspect ${WAKUNODE_IMAGE} > /dev/null 2>&1; then echo 'Using local image'; else docker pull ${WAKUNODE_IMAGE:-statusteam/nim-waku:v0.16.0} && echo 'Image pulled'; fi",
-    "test": "TS_NODE_PROJECT=./tsconfig.dev.json mocha",
+    "test": "run-s test:*",
+    "test:node": "npm run pretest && TS_NODE_PROJECT=./tsconfig.dev.json mocha",
     "reset-hard": "git clean -dfx -e .idea && git reset --hard && npm i && npm run build"
   },
   "engines": {
