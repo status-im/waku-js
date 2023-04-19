@@ -16,6 +16,10 @@
     "./bytes": {
       "types": "./dist/bytes/index.d.ts",
       "import": "./dist/bytes/index.js"
+    },
+    "./constants": {
+      "types": "./dist/constants/index.d.ts",
+      "import": "./dist/constants/index.js"
     }
   },
   "typesVersions": {
