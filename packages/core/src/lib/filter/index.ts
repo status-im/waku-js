@@ -110,7 +110,7 @@ class Subscription {
           async (source) => await all(source)
         );
 
-        if (!res || !res.length) {
+        if (!res?.[0]) {
           throw Error(
             `No response received for request ${request.requestId}: ${res}`
           );
@@ -203,7 +203,7 @@ class Subscription {
           async (source) => await all(source)
         );
 
-        if (!res || !res.length) {
+        if (!res?.[0]) {
           throw Error(
             `No response received for request ${request.requestId}: ${res}`
           );
@@ -246,7 +246,7 @@ class Subscription {
           async (source) => await all(source)
         );
 
-        if (!res || !res.length) {
+        if (!res?.[0]) {
           throw Error(
             `No response received for request ${request.requestId}: ${res}`
           );

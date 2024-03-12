@@ -4,7 +4,7 @@ export const minute = 60 * second;
 /**
  * RelayCodec is the libp2p identifier for the waku relay protocol
  */
-export const RelayCodecs = ["/vac/waku/relay/2.0.0"];
+export const RelayCodec = "/vac/waku/relay/2.0.0";
 
 /**
  * RelayGossipFactor affects how many peers we will emit gossip to at each heartbeat.

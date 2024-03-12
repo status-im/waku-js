@@ -61,7 +61,7 @@ export async function getPeersForProtocol(
   const peers: Peer[] = [];
   await peerStore.forEach((peer) => {
     for (let i = 0; i < protocols.length; i++) {
-      if (peer.protocols.includes(protocols[i])) {
+      if (peer.protocols.includes(protocols[i] as string)) {
         peers.push(peer);
         break;
       }

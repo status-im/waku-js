@@ -30,7 +30,7 @@ async function fromValues(values: Uint8Array[]): Promise<ENR> {
   const obj: Record<ENRKey, ENRValue> = {};
   for (let i = 0; i < kvs.length; i += 2) {
     try {
-      obj[bytesToUtf8(kvs[i])] = kvs[i + 1];
+      obj[bytesToUtf8(kvs[i] as Uint8Array)] = kvs[i + 1] as Uint8Array;
     } catch (e) {
       log.error("Failed to decode ENR key to UTF-8, skipping it", kvs[i], e);
     }

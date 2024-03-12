@@ -40,6 +40,10 @@ export class ENRTree {
     // (Trailing recovery bit must be trimmed to pass `ecdsaVerify` method)
     const signedComponent = root.split(" sig")[0];
 
+    if (!signedComponent) {
+      throw Error(`Signature component is missing, got: ${signedComponent}`);
+    }
+
     const signedComponentBuffer = utf8ToBytes(signedComponent);
     const signatureBuffer = fromString(rootValues.signature, "base64url").slice(
       0,
@@ -113,11 +117,18 @@ export class ENRTree {
    * either further branch entries or ENR records.
    */
   static parseBranch(branch: string): string[] {
-    if (!branch.startsWith(this.BRANCH_PREFIX))
-      throw new Error(
+    if (!branch.startsWith(this.BRANCH_PREFIX)) {
+      throw Error(
         `ENRTree branch entry must start with '${this.BRANCH_PREFIX}'`
       );
+    }
 
-    return branch.split(this.BRANCH_PREFIX)[1].split(",");
+    const enrPart = branch.split(this.BRANCH_PREFIX)[1];
+
+    if (!enrPart) {
+      throw Error(`ENRTree branch does not have data`);
+    }
+
+    return enrPart.split(",");
   }
 }

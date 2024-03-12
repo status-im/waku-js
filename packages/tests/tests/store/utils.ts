@@ -148,3 +148,23 @@ export const adjustDate = (baseDate: Date, adjustMs: number): Date => {
   adjusted.setTime(adjusted.getTime() + adjustMs);
   return adjusted;
 };
+
+export const singleShardInfosToShardInfo = (
+  singleShardInfos: SingleShardInfo[]
+): ShardInfo => {
+  if (singleShardInfos.length === 0) throw new Error("Invalid shard");
+
+  const clusterIds = singleShardInfos.map((shardInfo) => shardInfo.clusterId);
+  if (new Set(clusterIds).size !== 1) {
+    throw new Error("Passed shard infos have different clusterIds");
+  }
+
+  const shards = singleShardInfos
+    .map((shardInfo) => shardInfo.shard)
+    .filter((shard): shard is number => shard !== undefined);
+
+  return {
+    clusterId: singleShardInfos[0].clusterId,
+    shards
+  };
+};

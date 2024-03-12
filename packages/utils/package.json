@@ -57,7 +57,7 @@
     "check": "run-s check:*",
     "check:lint": "eslint src *.js",
     "check:spelling": "cspell \"{README.md,src/**/*.ts}\"",
-    "check:tsc": "tsc -p tsconfig.dev.json",
+    "check:tsc": "tsc -p tsconfig.json",
     "prepublish": "npm run build",
     "reset-hard": "git clean -dfx -e .idea && git reset --hard && npm i && npm run build",
     "test": "NODE_ENV=test run-s test:*",

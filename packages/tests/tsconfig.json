@@ -3,7 +3,8 @@
   "compilerOptions": {
     "outDir": "dist/",
     "rootDir": "src",
-    "tsBuildInfoFile": "dist/.tsbuildinfo"
+    "tsBuildInfoFile": "dist/.tsbuildinfo",
+    "noUncheckedIndexedAccess": false,
   },
   "include": ["src", "src/run-tests.js"],
   "exclude": ["src/**/*.spec.ts", "src/test_utils"]

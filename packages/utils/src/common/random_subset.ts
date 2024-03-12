@@ -22,8 +22,8 @@ function shuffle<T>(arr: T[]): T[] {
 
   for (let i = 0; i < arr.length; i++) {
     const j = randInt();
-    const tmp = arr[i];
-    arr[i] = arr[j];
+    const tmp = arr[i] as T;
+    arr[i] = arr[j] as T;
     arr[j] = tmp;
   }
   return arr;

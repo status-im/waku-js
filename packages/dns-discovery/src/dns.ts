@@ -8,7 +8,7 @@ import type {
 import { Logger } from "@waku/utils";
 
 import { DnsOverHttps } from "./dns_over_https.js";
-import { ENRTree } from "./enrtree.js";
+import { ENRTree, ENRTreeValues } from "./enrtree.js";
 import {
   fetchNodesUntilCapabilitiesFulfilled,
   yieldNodesUntilCapabilitiesFulfilled
@@ -41,8 +41,7 @@ export class DnsNodeDiscovery {
     enrTreeUrls: string[],
     wantedNodeCapabilityCount: Partial<NodeCapabilityCount>
   ): Promise<IEnr[]> {
-    const networkIndex = Math.floor(Math.random() * enrTreeUrls.length);
-    const { publicKey, domain } = ENRTree.parseTree(enrTreeUrls[networkIndex]);
+    const { publicKey, domain } = DnsNodeDiscovery.parseTree(enrTreeUrls);
     const context: SearchContext = {
       domain,
       publicKey,
@@ -78,8 +77,7 @@ export class DnsNodeDiscovery {
     enrTreeUrls: string[],
     wantedNodeCapabilityCount: Partial<NodeCapabilityCount>
   ): AsyncGenerator<IEnr> {
-    const networkIndex = Math.floor(Math.random() * enrTreeUrls.length);
-    const { publicKey, domain } = ENRTree.parseTree(enrTreeUrls[networkIndex]);
+    const { publicKey, domain } = DnsNodeDiscovery.parseTree(enrTreeUrls);
     const context: SearchContext = {
       domain,
       publicKey,
@@ -149,8 +147,9 @@ export class DnsNodeDiscovery {
     subdomain: string,
     context: SearchContext
   ): Promise<string> {
-    if (this._DNSTreeCache[subdomain]) {
-      return this._DNSTreeCache[subdomain];
+    const currentCache = this._DNSTreeCache[subdomain];
+    if (currentCache) {
+      return currentCache;
     }
 
     // Location is either the top level tree entry host or a subdomain of it.
@@ -161,9 +160,13 @@ export class DnsNodeDiscovery {
 
     const response = await this.dns.resolveTXT(location);
 
-    if (!response.length)
+    if (!response.length) {
       throw new Error("Received empty result array while fetching TXT record");
-    if (!response[0].length) throw new Error("Received empty TXT record");
+    }
+
+    if (!response[0]?.length) {
+      throw new Error("Received empty TXT record");
+    }
 
     // Branch entries can be an array of strings of comma delimited subdomains, with
     // some subdomain strings split across the array elements
@@ -171,6 +174,17 @@ export class DnsNodeDiscovery {
 
     this._DNSTreeCache[subdomain] = result;
     return result;
+  }
+
+  private static parseTree(enrTreeUrls: string[]): ENRTreeValues {
+    const networkIndex = Math.floor(Math.random() * enrTreeUrls.length);
+    const enrTree = enrTreeUrls[networkIndex];
+
+    if (!enrTree) {
+      throw Error(`Failed to read ENR tree for the network: ${networkIndex}`);
+    }
+
+    return ENRTree.parseTree(enrTree);
   }
 }
 
@@ -211,5 +225,5 @@ function selectRandomPath(branches: string[], context: SearchContext): string {
     index = Math.floor(Math.random() * branches.length);
   } while (circularRefs[index]);
 
-  return branches[index];
+  return branches[index] as string;
 }

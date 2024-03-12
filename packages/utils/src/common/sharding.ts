@@ -19,26 +19,6 @@ export const singleShardInfoToPubsubTopic = (
   return `/waku/2/rs/${shardInfo.clusterId}/${shardInfo.shard}`;
 };
 
-export const singleShardInfosToShardInfo = (
-  singleShardInfos: SingleShardInfo[]
-): ShardInfo => {
-  if (singleShardInfos.length === 0) throw new Error("Invalid shard");
-
-  const clusterIds = singleShardInfos.map((shardInfo) => shardInfo.clusterId);
-  if (new Set(clusterIds).size !== 1) {
-    throw new Error("Passed shard infos have different clusterIds");
-  }
-
-  const shards = singleShardInfos
-    .map((shardInfo) => shardInfo.shard)
-    .filter((shard): shard is number => shard !== undefined);
-
-  return {
-    clusterId: singleShardInfos[0].clusterId,
-    shards
-  };
-};
-
 export const shardInfoToPubsubTopics = (
   shardInfo: Partial<ShardingParams>
 ): PubsubTopic[] => {
@@ -80,15 +60,15 @@ export const pubsubTopicToSingleShardInfo = (
   const parts = pubsubTopics.split("/");
 
   if (
-    parts.length != 6 ||
+    parts.length !== 6 ||
     parts[1] !== "waku" ||
     parts[2] !== "2" ||
     parts[3] !== "rs"
   )
     throw new Error("Invalid pubsub topic");
 
-  const clusterId = parseInt(parts[4]);
-  const shard = parseInt(parts[5]);
+  const clusterId = parseInt(parts[4] as string);
+  const shard = parseInt(parts[5] as string);
 
   if (isNaN(clusterId) || isNaN(shard))
     throw new Error("Invalid clusterId or shard");
@@ -133,7 +113,7 @@ export function ensureValidContentTopic(contentTopic: string): ContentTopic {
   // Validate generation field if present
   let generation = 0;
   if (parts.length == 6) {
-    generation = parseInt(parts[1]);
+    generation = parseInt(parts[1] as string);
     if (isNaN(generation)) {
       throw new Error("Invalid generation field in content topic");
     }
@@ -143,29 +123,33 @@ export function ensureValidContentTopic(contentTopic: string): ContentTopic {
   }
   // Validate remaining fields
   const fields = parts.splice(-4);
-  // Validate application field
-  if (fields[0].length == 0) {
+
+  const application = fields[0];
+  if (!application || application?.length == 0) {
     throw new Error("Application field cannot be empty");
   }
-  // Validate version field
-  if (fields[1].length == 0) {
+
+  const version = fields[1];
+  if (!version || version?.length == 0) {
     throw new Error("Version field cannot be empty");
   }
-  // Validate topic name field
-  if (fields[2].length == 0) {
+
+  const topicName = fields[2];
+  if (!topicName || topicName?.length == 0) {
     throw new Error("Topic name field cannot be empty");
   }
-  // Validate encoding field
-  if (fields[3].length == 0) {
+
+  const encoding = fields[3];
+  if (!encoding || encoding?.length == 0) {
     throw new Error("Encoding field cannot be empty");
   }
 
   return {
     generation,
-    application: fields[0],
-    version: fields[1],
-    topicName: fields[2],
-    encoding: fields[3]
+    application,
+    version,
+    topicName,
+    encoding
   };
 }
 

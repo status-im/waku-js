@@ -73,25 +73,23 @@ export class ENR extends RawEnr implements IEnr {
 
   setLocationMultiaddr(multiaddr: Multiaddr): void {
     const protoNames = multiaddr.protoNames();
-    if (
-      protoNames.length !== 2 &&
-      protoNames[1] !== "udp" &&
-      protoNames[1] !== "tcp"
-    ) {
+    const protocol = protoNames[1];
+    if (protoNames.length !== 2 && protocol !== "udp" && protocol !== "tcp") {
       throw new Error("Invalid multiaddr");
     }
+
     const tuples = multiaddr.tuples();
-    if (!tuples[0][1] || !tuples[1][1]) {
+    if (!tuples[0]?.[1] || !tuples[1]?.[1] || !protocol) {
       throw new Error("Invalid multiaddr");
     }
 
     // IPv4
     if (tuples[0][0] === 4) {
       this.set("ip", tuples[0][1]);
-      this.set(protoNames[1], tuples[1][1]);
+      this.set(protocol, tuples[1][1]);
     } else {
       this.set("ip6", tuples[0][1]);
-      this.set(protoNames[1] + "6", tuples[1][1]);
+      this.set(protocol + "6", tuples[1][1]);
     }
   }
 

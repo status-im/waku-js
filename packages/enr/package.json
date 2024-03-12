@@ -40,10 +40,10 @@
     "check": "run-s check:*",
     "check:lint": "eslint src --ext .ts",
     "check:spelling": "cspell \"{README.md,src/**/*.ts}\"",
-    "check:tsc": "tsc -p tsconfig.dev.json",
-    "test": "NODE_ENV=test run-s test:*",
+    "check:tsc": "tsc -p tsconfig.json",
+    "test": "NODE_ENV=test TS_NODE_PROJECT=./tsconfig.dev.json run-s test:*",
     "test:node": "NODE_ENV=test TS_NODE_PROJECT=./tsconfig.dev.json mocha",
-    "test:browser": "NODE_ENV=test karma start karma.conf.cjs",
+    "test:browser": "NODE_ENV=test TS_NODE_PROJECT=./tsconfig.dev.json karma start karma.conf.cjs",
     "prepublish": "npm run build",
     "reset-hard": "git clean -dfx -e .idea && git reset --hard && npm i && npm run build"
   },

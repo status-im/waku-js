@@ -37,6 +37,7 @@
     /* Experimental Options */
     // "experimentalDecorators": true /* Enables experimental support for ES7 decorators. */,
     // "emitDecoratorMetadata": true /* Enables experimental support for emitting type metadata for decorators. */,
+    "noUncheckedIndexedAccess": true,
 
     "lib": ["es2022", "dom"],
     "types": ["node", "mocha"],

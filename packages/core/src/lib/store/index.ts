@@ -237,8 +237,11 @@ class Store extends BaseProtocol implements IStore {
       );
     }
 
-    // we can be certain that there is only one pubsub topic in the query
     const pubsubTopicForQuery = uniquePubsubTopicsInQuery[0];
+
+    if (!pubsubTopicForQuery) {
+      throw Error("Cannot find a pubsub topic to use for query.");
+    }
 
     ensurePubsubTopicIsConfigured(pubsubTopicForQuery, this.pubsubTopics);
 
@@ -286,6 +289,10 @@ class Store extends BaseProtocol implements IStore {
         maxBootstrapPeers: 1
       })
     )[0];
+
+    if (!peer) {
+      throw Error("Failed executing query: missing a peer.");
+    }
 
     for await (const messages of paginate<T>(
       this.getStream.bind(this, peer),

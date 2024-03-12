@@ -43,7 +43,10 @@ export function filterPeersByDiscovery(
   // Fill up to numPeers with remaining random peers if needed
   while (selectedPeers.length < numPeers && nonBootstrapPeers.length > 0) {
     const randomIndex = Math.floor(Math.random() * nonBootstrapPeers.length);
-    const randomPeer = nonBootstrapPeers.splice(randomIndex, 1)[0];
+    const randomPeer = nonBootstrapPeers[randomIndex];
+    if (!randomPeer) {
+      continue;
+    }
     selectedPeers.push(randomPeer);
   }
 

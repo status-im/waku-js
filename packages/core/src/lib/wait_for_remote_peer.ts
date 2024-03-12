@@ -99,7 +99,7 @@ async function waitForConnectedPeer(
 
   if (peers.length) {
     if (!metadataService) {
-      log.info(`${codec} peer found: `, peers[0].id.toString());
+      log.info(`${codec} peer found: `, peers[0]?.id.toString());
       return;
     }
 

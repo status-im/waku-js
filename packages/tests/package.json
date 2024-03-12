@@ -41,9 +41,9 @@
     "check:lint": "eslint src tests",
     "check:spelling": "cspell \"{README.md,{tests,src}/**/*.ts}\"",
     "check:tsc": "tsc -p tsconfig.dev.json",
-    "test": "NODE_ENV=test run-s test:*",
-    "test:node": "NODE_ENV=test node ./src/run-tests.js \"tests/**/!(*.optional).spec.ts\"",
-    "test:optional": "NODE_ENV=test node ./src/run-tests.js \"tests/**/@(*.optional).spec.ts\"",
+    "test": "NODE_ENV=test TS_NODE_PROJECT=./tsconfig.dev.json run-s test:*",
+    "test:node": "NODE_ENV=test TS_NODE_PROJECT=./tsconfig.dev.json node ./src/run-tests.js \"tests/**/!(*.optional).spec.ts\"",
+    "test:optional": "NODE_ENV=test TS_NODE_PROJECT=./tsconfig.dev.json node ./src/run-tests.js \"tests/**/@(*.optional).spec.ts\"",
     "reset-hard": "git clean -dfx -e .idea && git reset --hard && npm i && npm run build"
   },
   "engines": {

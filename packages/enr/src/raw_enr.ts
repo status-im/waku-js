@@ -153,7 +153,7 @@ export class RawEnr extends Map<ENRKey, ENRValue> {
    */
   get waku2(): Waku2 | undefined {
     const raw = this.get("waku2");
-    if (raw) return decodeWaku2(raw[0]);
+    if (raw) return decodeWaku2(raw[0] as number);
 
     return;
   }

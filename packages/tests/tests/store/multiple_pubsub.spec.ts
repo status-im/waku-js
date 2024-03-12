@@ -3,8 +3,7 @@ import type { ContentTopicInfo, IMessage, LightNode } from "@waku/interfaces";
 import { createLightNode, Protocols } from "@waku/sdk";
 import {
   contentTopicToPubsubTopic,
-  pubsubTopicToSingleShardInfo,
-  singleShardInfosToShardInfo
+  pubsubTopicToSingleShardInfo
 } from "@waku/utils";
 import { expect } from "chai";
 
@@ -31,6 +30,7 @@ import {
   sendMessagesAutosharding,
   shardInfo1,
   shardInfoBothShards,
+  singleShardInfosToShardInfo,
   startAndConnectLightNode,
   totalMsgs
 } from "./utils.js";

@@ -1,15 +1,18 @@
 const webpack = require("webpack");
-const playwright = require('playwright');
+const playwright = require("playwright");
 
 process.env.CHROME_BIN = playwright.chromium.executablePath();
 process.env.FIREFOX_BIN = playwright.firefox.executablePath();
+
+const path = require("path");
+const tsConfigFile = path.resolve(__dirname, "./tsconfig.dev.json");
 
 module.exports = function (config) {
   config.set({
     frameworks: ["webpack", "mocha"],
     files: ["src/**/!(node).spec.ts"],
     preprocessors: {
-      "src/**/!(node).spec.ts": ["webpack"]
+      "src/**/!(node).spec.ts": ["webpack"],
     },
     envPreprocessor: ["CI"],
     reporters: ["progress"],
@@ -17,13 +20,19 @@ module.exports = function (config) {
     singleRun: true,
     client: {
       mocha: {
-        timeout: 6000 // Default is 2s
-      }
+        timeout: 6000, // Default is 2s
+      },
     },
     webpack: {
       mode: "development",
       module: {
-        rules: [{ test: /\.([cm]?ts|tsx)$/, loader: "ts-loader" }]
+        rules: [
+          {
+            test: /\.([cm]?ts|tsx)$/,
+            loader: "ts-loader",
+            options: { configFile: tsConfigFile },
+          },
+        ],
       },
       plugins: [
         new webpack.DefinePlugin({
@@ -31,19 +40,19 @@ module.exports = function (config) {
           "process.env.DISPLAY": "Browser",
         }),
         new webpack.ProvidePlugin({
-          process: "process/browser.js"
-        })
+          process: "process/browser.js",
+        }),
       ],
       resolve: {
         extensions: [".ts", ".tsx", ".js"],
         extensionAlias: {
           ".js": [".js", ".ts"],
           ".cjs": [".cjs", ".cts"],
-          ".mjs": [".mjs", ".mts"]
-        }
+          ".mjs": [".mjs", ".mts"],
+        },
       },
       stats: { warnings: false },
-      devtool: "inline-source-map"
-    }
+      devtool: "inline-source-map",
+    },
   });
 };

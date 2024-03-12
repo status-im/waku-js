@@ -185,8 +185,12 @@ export async function decrypt(
       (macKey) => [hash.slice(0, 16), macKey]
     );
 
+    if (!encryptionKey || !macKey) {
+      throw Error("Failed to get parameters from the hash.");
+    }
+
     if (!(await hmacSha256Verify(macKey, cipherAndIv, msgMac))) {
-      throw new Error("Incorrect MAC");
+      throw Error("Incorrect MAC");
     }
 
     return aesCtrDecrypt(iv, encryptionKey, ciphertext);

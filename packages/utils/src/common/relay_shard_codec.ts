@@ -52,7 +52,7 @@ export const encodeRelayShard = (shardInfo: ShardInfo): Uint8Array => {
     // rs format (Index List)
     view.setUint8(2, shards.length);
     for (let i = 0, offset = 3; i < shards.length; i++, offset += 2) {
-      view.setUint16(offset, shards[i]);
+      view.setUint16(offset, shards[i] as number);
     }
   }
 
