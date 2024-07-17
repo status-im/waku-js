@@ -12,7 +12,7 @@ import {
   shardInfoToPubsubTopics
 } from "@waku/utils";
 
-import { createLightNode } from "../light-node/index.js";
+import { createLightNode } from "../create/index.js";
 
 interface CreateTopicOptions {
   waku?: LightNode;

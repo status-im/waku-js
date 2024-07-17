@@ -92,6 +92,46 @@ export async function defaultLibp2p(
 export async function createLibp2pAndUpdateOptions(
   options: CreateWakuNodeOptions
 ): Promise<Libp2p> {
+  const shardInfo = configureNetworkOptions(options);
+
+  const libp2pOptions = options?.libp2p ?? {};
+  const peerDiscovery = libp2pOptions.peerDiscovery ?? [];
+
+  if (options?.defaultBootstrap) {
+    peerDiscovery.push(...defaultPeerDiscoveries(options.pubsubTopics!));
+  }
+
+  if (options?.bootstrapPeers) {
+    peerDiscovery.push(bootstrap({ list: options.bootstrapPeers }));
+  }
+
+  libp2pOptions.peerDiscovery = peerDiscovery;
+
+  const libp2p = await defaultLibp2p(
+    shardInfo,
+    wakuGossipSub(options),
+    libp2pOptions,
+    options?.userAgent
+  );
+
+  return libp2p;
+}
+
+function configureNetworkOptions(
+  options: CreateWakuNodeOptions
+): ShardInfo | undefined {
+  const flags = [
+    options.contentTopics,
+    options.pubsubTopics,
+    options.shardInfo
+  ].filter((v) => !!v);
+
+  if (flags.length > 1) {
+    throw Error(
+      "Too many network configurations provided. Pass only one of: pubsubTopic, contentTopics or shardInfo."
+    );
+  }
+
   logWhichShardInfoIsUsed(options);
 
   if (options.contentTopics) {
@@ -105,27 +145,7 @@ export async function createLibp2pAndUpdateOptions(
   options.pubsubTopics = shardInfo?.pubsubTopics ??
     options.pubsubTopics ?? [DefaultPubsubTopic];
 
-  const libp2pOptions = options?.libp2p ?? {};
-  const peerDiscovery = libp2pOptions.peerDiscovery ?? [];
-
-  if (options?.defaultBootstrap) {
-    peerDiscovery.push(...defaultPeerDiscoveries(options.pubsubTopics));
-  }
-
-  if (options?.bootstrapPeers) {
-    peerDiscovery.push(bootstrap({ list: options.bootstrapPeers }));
-  }
-
-  libp2pOptions.peerDiscovery = peerDiscovery;
-
-  const libp2p = await defaultLibp2p(
-    shardInfo?.shardInfo,
-    wakuGossipSub(options),
-    libp2pOptions,
-    options?.userAgent
-  );
-
-  return libp2p;
+  return shardInfo?.shardInfo;
 }
 
 function logWhichShardInfoIsUsed(options: CreateWakuNodeOptions): void {

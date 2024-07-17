@@ -92,10 +92,14 @@ export async function runMultipleNodes(
     staticNoiseKey: NOISE_KEY_1,
     libp2p: {
       addresses: { listen: ["/ip4/0.0.0.0/tcp/0/ws"] }
-    },
-    pubsubTopics,
-    shardInfo
+    }
   };
+
+  if (shardInfo) {
+    waku_options.shardInfo = shardInfo;
+  } else {
+    waku_options.pubsubTopics = pubsubTopics;
+  }
 
   log.info("Starting js waku node with :", JSON.stringify(waku_options));
   let waku: LightNode | undefined;

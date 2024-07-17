@@ -1,7 +1,7 @@
 import { type FullNode, type RelayNode } from "@waku/interfaces";
 import { RelayCreateOptions } from "@waku/relay";
 
-import { createLibp2pAndUpdateOptions } from "../utils/libp2p.js";
+import { createLibp2pAndUpdateOptions } from "../create/libp2p.js";
 import { CreateWakuNodeOptions, WakuNode, WakuOptions } from "../waku.js";
 
 /**
