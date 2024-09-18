@@ -124,6 +124,7 @@
     "websockets",
     "wifi",
     "xsalsa20",
+    "yamux",
     "Привет",
     "مرحبا"
   ],
