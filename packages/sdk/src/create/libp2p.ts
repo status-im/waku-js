@@ -1,7 +1,7 @@
 import { noise } from "@chainsafe/libp2p-noise";
+import { yamux } from "@chainsafe/libp2p-yamux";
 import { bootstrap } from "@libp2p/bootstrap";
 import { identify } from "@libp2p/identify";
-import { mplex } from "@libp2p/mplex";
 import { ping } from "@libp2p/ping";
 import { webSockets } from "@libp2p/websockets";
 import { all as filterAll, wss } from "@libp2p/websockets/filters";
@@ -63,7 +63,7 @@ export async function defaultLibp2p(
       minConnections: 1
     },
     transports: [webSockets({ filter: filter })],
-    streamMuxers: [mplex()],
+    streamMuxers: [yamux()],
     connectionEncryption: [noise()],
     ...options,
     services: {

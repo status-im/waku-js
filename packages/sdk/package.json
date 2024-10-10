@@ -61,7 +61,8 @@
   },
   "dependencies": {
     "@chainsafe/libp2p-noise": "^15.1.0",
-    "@libp2p/bootstrap": "^10.1.2",
+    "@chainsafe/libp2p-yamux": "^7.0.0",
+    "@libp2p/bootstrap": "^10",
     "@libp2p/identify": "^2.1.2",
     "@libp2p/mplex": "^10.1.2",
     "@libp2p/ping": "^1.1.2",
@@ -70,9 +71,9 @@
     "@waku/core": "0.0.32",
     "@waku/discovery": "0.0.5",
     "@waku/interfaces": "0.0.27",
+    "@waku/message-hash": "0.1.16",
     "@waku/proto": "^0.0.8",
     "@waku/utils": "0.0.20",
-    "@waku/message-hash": "0.1.16",
     "libp2p": "^1.8.1"
   },
   "devDependencies": {
