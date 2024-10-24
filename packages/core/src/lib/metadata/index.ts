@@ -30,7 +30,7 @@ class Metadata extends BaseProtocol implements IMetadata {
     public pubsubTopics: PubsubTopic[],
     libp2p: Libp2pComponents
   ) {
-    super(MetadataCodec, libp2p.components, log, pubsubTopics);
+    super(MetadataCodec, libp2p.components, pubsubTopics);
     this.libp2pComponents = libp2p;
     void libp2p.registrar.handle(MetadataCodec, (streamData) => {
       void this.onRequest(streamData);

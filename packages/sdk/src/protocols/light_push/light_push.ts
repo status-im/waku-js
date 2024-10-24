@@ -1,10 +1,5 @@
 import type { Peer, PeerId } from "@libp2p/interface";
-import {
-  ConnectionManager,
-  getHealthManager,
-  LightPushCodec,
-  LightPushCore
-} from "@waku/core";
+import { ConnectionManager, getHealthManager, LightPushCore } from "@waku/core";
 import {
   type CoreProtocolResult,
   Failure,
@@ -13,13 +8,12 @@ import {
   type IMessage,
   type ISenderOptions,
   type Libp2p,
-  type ProtocolCreateOptions,
   ProtocolError,
   SDKProtocolResult
 } from "@waku/interfaces";
 import { ensurePubsubTopicIsConfigured, Logger } from "@waku/utils";
 
-import { DEFAULT_NUM_PEERS_TO_USE } from "../base_protocol.js";
+import { PeerManager } from "../peer_manager.js";
 
 const log = new Logger("sdk:light-push");
 
@@ -32,19 +26,14 @@ const DEFAULT_SEND_OPTIONS: ISenderOptions = {
 type RetryCallback = (peer: Peer) => Promise<CoreProtocolResult>;
 
 export class LightPush implements ILightPush {
-  private numPeersToUse: number = DEFAULT_NUM_PEERS_TO_USE;
   public readonly protocol: LightPushCore;
 
   public constructor(
     connectionManager: ConnectionManager,
-    private libp2p: Libp2p,
-    options?: ProtocolCreateOptions
+    private peerManager: PeerManager,
+    libp2p: Libp2p
   ) {
-    this.numPeersToUse = options?.numPeersToUse ?? DEFAULT_NUM_PEERS_TO_USE;
-    this.protocol = new LightPushCore(
-      connectionManager.configuredPubsubTopics,
-      libp2p
-    );
+    this.protocol = new LightPushCore(connectionManager.pubsubTopics, libp2p);
   }
 
   public async send(
@@ -70,7 +59,7 @@ export class LightPush implements ILightPush {
       };
     }
 
-    const peers = await this.getConnectedPeers();
+    const peers = await this.peerManager.getPeers();
     if (peers.length === 0) {
       return {
         successes,
@@ -128,7 +117,7 @@ export class LightPush implements ILightPush {
     maxAttempts?: number
   ): Promise<void> {
     maxAttempts = maxAttempts || DEFAULT_MAX_ATTEMPTS;
-    const connectedPeers = await this.getConnectedPeers();
+    const connectedPeers = await this.peerManager.getPeers();
 
     if (connectedPeers.length === 0) {
       log.warn("Cannot retry with no connected peers.");
@@ -148,34 +137,12 @@ export class LightPush implements ILightPush {
       );
     }
   }
-
-  private async getConnectedPeers(): Promise<Peer[]> {
-    const peerIDs = this.libp2p.getPeers();
-
-    if (peerIDs.length === 0) {
-      return [];
-    }
-
-    const peers = await Promise.all(
-      peerIDs.map(async (id) => {
-        try {
-          return await this.libp2p.peerStore.get(id);
-        } catch (e) {
-          return null;
-        }
-      })
-    );
-
-    return peers
-      .filter((p) => !!p)
-      .filter((p) => (p as Peer).protocols.includes(LightPushCodec))
-      .slice(0, this.numPeersToUse) as Peer[];
-  }
 }
 
 export function wakuLightPush(
   connectionManager: ConnectionManager,
-  init: Partial<ProtocolCreateOptions> = {}
+  peerManager: PeerManager
 ): (libp2p: Libp2p) => ILightPush {
-  return (libp2p: Libp2p) => new LightPush(connectionManager, libp2p, init);
+  return (libp2p: Libp2p) =>
+    new LightPush(connectionManager, peerManager, libp2p);
 }

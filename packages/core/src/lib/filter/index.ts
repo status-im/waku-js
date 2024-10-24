@@ -40,7 +40,7 @@ export class FilterCore extends BaseProtocol implements IBaseProtocolCore {
     public readonly pubsubTopics: PubsubTopic[],
     libp2p: Libp2p
   ) {
-    super(FilterCodecs.SUBSCRIBE, libp2p.components, log, pubsubTopics);
+    super(FilterCodecs.SUBSCRIBE, libp2p.components, pubsubTopics);
 
     libp2p
       .handle(FilterCodecs.PUSH, this.onRequest.bind(this), {

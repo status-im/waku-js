@@ -5,9 +5,7 @@ import type { ContentTopic, ThisOrThat } from "./misc.js";
 import type {
   Callback,
   IBaseProtocolCore,
-  IBaseProtocolSDK,
   ProtocolError,
-  ProtocolUseOptions,
   SDKProtocolResult
 } from "./protocols.js";
 import type { IReceiver } from "./receiver.js";
@@ -37,15 +35,13 @@ export interface ISubscription {
   unsubscribeAll(): Promise<SDKProtocolResult>;
 }
 
-export type IFilter = IReceiver &
-  IBaseProtocolSDK & { protocol: IBaseProtocolCore } & {
-    subscribe<T extends IDecodedMessage>(
-      decoders: IDecoder<T> | IDecoder<T>[],
-      callback: Callback<T>,
-      protocolUseOptions?: ProtocolUseOptions,
-      subscribeOptions?: SubscribeOptions
-    ): Promise<SubscribeResult>;
-  };
+export type IFilter = IReceiver & { protocol: IBaseProtocolCore } & {
+  subscribe<T extends IDecodedMessage>(
+    decoders: IDecoder<T> | IDecoder<T>[],
+    callback: Callback<T>,
+    subscribeOptions?: SubscribeOptions
+  ): Promise<SubscribeResult>;
+};
 
 export type SubscribeResult = SubscriptionSuccess | SubscriptionError;
 

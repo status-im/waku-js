@@ -115,9 +115,7 @@ describe("Wait for remote peer", function () {
     await delay(1000);
     await waku2.waitForPeers([Protocols.Store]);
 
-    const peers = (await waku2.store.protocol.connectedPeers()).map((peer) =>
-      peer.id.toString()
-    );
+    const peers = (await waku2.getPeers()).map((peer) => peer.id.toString());
     const nimPeerId = multiAddrWithId.getPeerId();
 
     expect(nimPeerId).to.not.be.undefined;
@@ -145,9 +143,7 @@ describe("Wait for remote peer", function () {
     await waku2.dial(multiAddrWithId);
     await waitPromise;
 
-    const peers = (await waku2.store.protocol.connectedPeers()).map((peer) =>
-      peer.id.toString()
-    );
+    const peers = (await waku2.getPeers()).map((peer) => peer.id.toString());
 
     const nimPeerId = multiAddrWithId.getPeerId();
 
@@ -174,9 +170,7 @@ describe("Wait for remote peer", function () {
     await waku2.dial(multiAddrWithId);
     await waku2.waitForPeers([Protocols.LightPush]);
 
-    const peers = (await waku2.lightPush.protocol.connectedPeers()).map(
-      (peer) => peer.id.toString()
-    );
+    const peers = (await waku2.getPeers()).map((peer) => peer.id.toString());
 
     const nimPeerId = multiAddrWithId.getPeerId();
 
@@ -203,9 +197,7 @@ describe("Wait for remote peer", function () {
     await waku2.dial(multiAddrWithId);
     await waku2.waitForPeers([Protocols.Filter]);
 
-    const peers = (await waku2.filter.protocol.connectedPeers()).map((peer) =>
-      peer.id.toString()
-    );
+    const peers = (await waku2.getPeers()).map((peer) => peer.id.toString());
 
     const nimPeerId = multiAddrWithId.getPeerId();
 
@@ -213,14 +205,15 @@ describe("Wait for remote peer", function () {
     expect(peers.includes(nimPeerId as string)).to.be.true;
   });
 
+  // TODO: re-enable store once https://github.com/waku-org/js-waku/issues/2162 is fixed
   it("Light Node - default protocols", async function () {
     this.timeout(20_000);
     nwaku = new ServiceNode(makeLogFileName(this));
     await nwaku.start({
       filter: true,
       lightpush: true,
-      relay: false,
-      store: true
+      relay: false
+      // store: true
     });
     const multiAddrWithId = await nwaku.getMultiaddrWithId();
 
@@ -232,26 +225,16 @@ describe("Wait for remote peer", function () {
     await waku2.dial(multiAddrWithId);
     await waku2.waitForPeers([
       Protocols.Filter,
-      Protocols.Store,
+      // Protocols.Store,
       Protocols.LightPush
     ]);
 
-    const filterPeers = (await waku2.filter.protocol.connectedPeers()).map(
-      (peer) => peer.id.toString()
-    );
-    const storePeers = (await waku2.store.protocol.connectedPeers()).map(
-      (peer) => peer.id.toString()
-    );
-    const lightPushPeers = (
-      await waku2.lightPush.protocol.connectedPeers()
-    ).map((peer) => peer.id.toString());
+    const peers = (await waku2.getPeers()).map((peer) => peer.id.toString());
 
     const nimPeerId = multiAddrWithId.getPeerId();
 
     expect(nimPeerId).to.not.be.undefined;
-    expect(filterPeers.includes(nimPeerId as string)).to.be.true;
-    expect(storePeers.includes(nimPeerId as string)).to.be.true;
-    expect(lightPushPeers.includes(nimPeerId as string)).to.be.true;
+    expect(peers.includes(nimPeerId as string)).to.be.true;
   });
 
   it("Privacy Node - default protocol", async function () {

@@ -1,5 +1,5 @@
 import type { Stream } from "@libp2p/interface";
-import { isPeerId, PeerId } from "@libp2p/interface";
+import { isPeerId, Peer, PeerId } from "@libp2p/interface";
 import { multiaddr, Multiaddr, MultiaddrInput } from "@multiformats/multiaddr";
 import { ConnectionManager, getHealthManager } from "@waku/core";
 import type {
@@ -18,33 +18,18 @@ import { Logger } from "@waku/utils";
 
 import { wakuFilter } from "../protocols/filter/index.js";
 import { wakuLightPush } from "../protocols/light_push/index.js";
+import { PeerManager } from "../protocols/peer_manager.js";
 import { wakuStore } from "../protocols/store/index.js";
 import { ReliabilityMonitorManager } from "../reliability_monitor/index.js";
 
 import { waitForRemotePeer } from "./wait_for_remote_peer.js";
 
-export const DefaultPingKeepAliveValueSecs = 5 * 60;
-export const DefaultRelayKeepAliveValueSecs = 5 * 60;
 export const DefaultUserAgent = "js-waku";
 export const DefaultPingMaxInboundStreams = 10;
 
 const log = new Logger("waku");
 
 export interface WakuOptions {
-  /**
-   * Set keep alive frequency in seconds: Waku will send a `/ipfs/ping/1.0.0`
-   * request to each peer after the set number of seconds. Set to 0 to disable.
-   *
-   * @default {@link @waku/core.DefaultPingKeepAliveValueSecs}
-   */
-  pingKeepAlive?: number;
-  /**
-   * Set keep alive frequency in seconds: Waku will send a ping message over
-   * relay to each peer after the set number of seconds. Set to 0 to disable.
-   *
-   * @default {@link @waku/core.DefaultRelayKeepAliveValueSecs}
-   */
-  relayKeepAlive?: number;
   /**
    * Set the user agent string to be used in identification of the node.
    * @default {@link @waku/core.DefaultUserAgent}
@@ -70,6 +55,8 @@ export class WakuNode implements IWaku {
   public connectionManager: ConnectionManager;
   public readonly health: IHealthManager;
 
+  private readonly peerManager: PeerManager;
+
   public constructor(
     public readonly pubsubTopics: PubsubTopic[],
     options: CreateWakuNodeOptions,
@@ -87,39 +74,39 @@ export class WakuNode implements IWaku {
       ...protocolsEnabled
     };
 
-    const pingKeepAlive =
-      options.pingKeepAlive || DefaultPingKeepAliveValueSecs;
-    const relayKeepAlive = this.relay
-      ? options.relayKeepAlive || DefaultRelayKeepAliveValueSecs
-      : 0;
-
     const peerId = this.libp2p.peerId.toString();
 
-    this.connectionManager = ConnectionManager.create(
-      peerId,
+    this.connectionManager = new ConnectionManager({
       libp2p,
-      { pingKeepAlive, relayKeepAlive },
-      this.pubsubTopics,
-      this.relay
-    );
+      relay: this.relay,
+      pubsubTopics: this.pubsubTopics,
+      config: options?.connectionManager
+    });
+
+    this.peerManager = new PeerManager({
+      libp2p,
+      config: {
+        numPeersToUse: options.numPeersToUse
+      }
+    });
 
     this.health = getHealthManager();
 
     if (protocolsEnabled.store) {
-      const store = wakuStore(this.connectionManager);
+      const store = wakuStore(this.connectionManager, this.peerManager);
       this.store = store(libp2p);
     }
 
     if (protocolsEnabled.lightpush) {
-      const lightPush = wakuLightPush(this.connectionManager, options);
+      const lightPush = wakuLightPush(this.connectionManager, this.peerManager);
       this.lightPush = lightPush(libp2p);
     }
 
     if (protocolsEnabled.filter) {
       const filter = wakuFilter(
         this.connectionManager,
-        this.lightPush,
-        options
+        this.peerManager,
+        this.lightPush
       );
       this.filter = filter(libp2p);
     }
@@ -205,8 +192,13 @@ export class WakuNode implements IWaku {
 
   public async stop(): Promise<void> {
     ReliabilityMonitorManager.stopAll();
+    this.peerManager.stop();
     this.connectionManager.stop();
     await this.libp2p.stop();
+  }
+
+  public async getPeers(): Promise<Peer[]> {
+    return this.connectionManager.getConnectedPeers();
   }
 
   public async waitForPeers(

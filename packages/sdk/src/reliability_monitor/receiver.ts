@@ -3,13 +3,14 @@ import {
   ContentTopic,
   CoreProtocolResult,
   IProtoMessage,
-  Libp2p,
   PeerIdStr,
   PubsubTopic
 } from "@waku/interfaces";
 import { messageHashStr } from "@waku/message-hash";
 import { Logger } from "@waku/utils";
 import { bytesToUtf8 } from "@waku/utils/bytes";
+
+import { PeerManager } from "../protocols/peer_manager.js";
 
 const log = new Logger("sdk:receiver:reliability_monitor");
 
@@ -28,24 +29,15 @@ export class ReceiverReliabilityMonitor {
 
   public constructor(
     private readonly pubsubTopic: PubsubTopic,
-    private getPeers: () => Peer[],
-    private renewPeer: (peerId: PeerId) => Promise<Peer | undefined>,
+    private readonly peerManager: PeerManager,
     private getContentTopics: () => ContentTopic[],
     private protocolSubscribe: (
       pubsubTopic: PubsubTopic,
       peer: Peer,
       contentTopics: ContentTopic[]
     ) => Promise<CoreProtocolResult>,
-    private addLibp2pEventListener: Libp2p["addEventListener"],
     private sendLightPushMessage: (peer: Peer) => Promise<void>
-  ) {
-    this.addLibp2pEventListener("peer:disconnect", (evt) => {
-      const peerId = evt.detail;
-      if (this.getPeers().some((p) => p.id.equals(peerId))) {
-        void this.renewAndSubscribePeer(peerId);
-      }
-    });
-  }
+  ) {}
 
   public setMaxPingFailures(value: number | undefined): void {
     if (value === undefined) {
@@ -166,7 +158,7 @@ export class ReceiverReliabilityMonitor {
 
       this.peerRenewalLocks.add(peerIdStr);
 
-      const newPeer = await this.renewPeer(peerId);
+      const newPeer = await this.peerManager.requestRenew(peerId);
       if (!newPeer) {
         log.warn(`Failed to renew peer ${peerIdStr}: No new peer found.`);
         return;

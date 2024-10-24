@@ -1,4 +1,4 @@
-import type { PeerId, Stream } from "@libp2p/interface";
+import type { Peer, PeerId, Stream } from "@libp2p/interface";
 import type { MultiaddrInput } from "@multiformats/multiaddr";
 
 import { IConnectionManager } from "./connection_manager.js";
@@ -121,6 +121,11 @@ export interface IWaku {
    * @returns {boolean} `true` if the node has working connection and `false` otherwise
    */
   isConnected(): boolean;
+
+  /**
+   * @returns {Peer[]} an array of all connected peers
+   */
+  getPeers(): Promise<Peer[]>;
 }
 
 export interface LightNode extends IWaku {

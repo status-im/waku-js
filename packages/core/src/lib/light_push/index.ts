@@ -37,7 +37,7 @@ export class LightPushCore extends BaseProtocol implements IBaseProtocolCore {
     public readonly pubsubTopics: PubsubTopic[],
     libp2p: Libp2p
   ) {
-    super(LightPushCodec, libp2p.components, log, pubsubTopics);
+    super(LightPushCodec, libp2p.components, pubsubTopics);
   }
 
   private async preparePushMessage(
@@ -76,6 +76,7 @@ export class LightPushCore extends BaseProtocol implements IBaseProtocolCore {
     }
   }
 
+  // TODO(weboko): use peer.id as parameter instead
   public async send(
     encoder: IEncoder,
     message: IMessage,

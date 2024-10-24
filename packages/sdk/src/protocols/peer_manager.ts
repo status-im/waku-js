@@ -1,113 +1,123 @@
-import { Peer, PeerId } from "@libp2p/interface";
-import { ConnectionManager, getHealthManager } from "@waku/core";
-import { BaseProtocol } from "@waku/core/lib/base_protocol";
-import { IHealthManager } from "@waku/interfaces";
+import { Connection, Peer, PeerId } from "@libp2p/interface";
+import { Libp2p } from "@waku/interfaces";
 import { Logger } from "@waku/utils";
-import { Mutex } from "async-mutex";
+
+const log = new Logger("peer-manager");
+
+const DEFAULT_NUM_PEERS_TO_USE = 2;
+const CONNECTION_LOCK_TAG = "peer-manager-lock";
+
+type PeerManagerConfig = {
+  numPeersToUse?: number;
+};
+
+type PeerManagerParams = {
+  libp2p: Libp2p;
+  config?: PeerManagerConfig;
+};
 
 export class PeerManager {
-  private peers: Map<string, Peer> = new Map();
-  private healthManager: IHealthManager;
+  private readonly numPeersToUse: number;
 
-  private readMutex = new Mutex();
-  private writeMutex = new Mutex();
-  private writeLockHolder: string | null = null;
+  private readonly libp2p: Libp2p;
 
-  public constructor(
-    private readonly connectionManager: ConnectionManager,
-    private readonly core: BaseProtocol,
-    private readonly log: Logger
-  ) {
-    this.healthManager = getHealthManager();
-    this.healthManager.updateProtocolHealth(this.core.multicodec, 0);
+  public constructor(params: PeerManagerParams) {
+    this.numPeersToUse =
+      params?.config?.numPeersToUse || DEFAULT_NUM_PEERS_TO_USE;
+
+    this.libp2p = params.libp2p;
+
+    this.startConnectionListener();
   }
 
-  public getWriteLockHolder(): string | null {
-    return this.writeLockHolder;
+  public stop(): void {
+    this.stopConnectionListener();
   }
 
-  public getPeers(): Peer[] {
-    return Array.from(this.peers.values());
+  public async getPeers(): Promise<Peer[]> {
+    return Promise.all(
+      this.getLockedConnections().map((c) => this.mapConnectionToPeer(c))
+    );
   }
 
-  public async addPeer(peer: Peer): Promise<void> {
-    return this.writeMutex.runExclusive(async () => {
-      this.writeLockHolder = `addPeer: ${peer.id.toString()}`;
-      await this.connectionManager.attemptDial(peer.id);
-      this.peers.set(peer.id.toString(), peer);
-      this.log.info(`Added and dialed peer: ${peer.id.toString()}`);
-      this.healthManager.updateProtocolHealth(
-        this.core.multicodec,
-        this.peers.size
-      );
-      this.writeLockHolder = null;
-    });
-  }
+  public async requestRenew(
+    peerId: PeerId | string
+  ): Promise<Peer | undefined> {
+    const lockedConnections = this.getLockedConnections();
+    const neededPeers = this.numPeersToUse - lockedConnections.length;
 
-  public async removePeer(peerId: PeerId): Promise<void> {
-    return this.writeMutex.runExclusive(() => {
-      this.writeLockHolder = `removePeer: ${peerId.toString()}`;
-      this.peers.delete(peerId.toString());
-      this.log.info(`Removed peer: ${peerId.toString()}`);
-      this.healthManager.updateProtocolHealth(
-        this.core.multicodec,
-        this.peers.size
-      );
-      this.writeLockHolder = null;
-    });
-  }
-
-  public async getPeerCount(): Promise<number> {
-    return this.readMutex.runExclusive(() => this.peers.size);
-  }
-
-  public async hasPeers(): Promise<boolean> {
-    return this.readMutex.runExclusive(() => this.peers.size > 0);
-  }
-
-  public async removeExcessPeers(excessPeers: number): Promise<void> {
-    this.log.info(`Removing ${excessPeers} excess peer(s)`);
-    const peersToRemove = Array.from(this.peers.values()).slice(0, excessPeers);
-    for (const peer of peersToRemove) {
-      await this.removePeer(peer.id);
+    if (neededPeers === 0) {
+      return;
     }
+
+    const result = await Promise.all(
+      this.getUnlockedConnections()
+        .filter((c) => !c.remotePeer.equals(peerId))
+        .slice(0, neededPeers)
+        .map((c) => this.lockConnection(c))
+        .map((c) => this.mapConnectionToPeer(c))
+    );
+
+    return result[0];
   }
 
-  /**
-   * Finds and adds new peers to the peers list.
-   * @param numPeers The number of peers to find and add.
-   */
-  public async findAndAddPeers(numPeers: number): Promise<Peer[]> {
-    const additionalPeers = await this.findPeers(numPeers);
-    if (additionalPeers.length === 0) {
-      this.log.warn("No additional peers found");
-      return [];
+  private startConnectionListener(): void {
+    this.libp2p.addEventListener("peer:connect", this.onConnected);
+    this.libp2p.addEventListener("peer:disconnect", this.onDisconnected);
+  }
+
+  private stopConnectionListener(): void {
+    this.libp2p.removeEventListener("peer:connect", this.onConnected);
+    this.libp2p.removeEventListener("peer:disconnect", this.onDisconnected);
+  }
+
+  private onConnected(event: CustomEvent<PeerId>): void {
+    const peerId = event.detail;
+    void this.lockPeerIfNeeded(peerId);
+  }
+
+  private onDisconnected(event: CustomEvent<PeerId>): void {
+    const peerId = event.detail;
+    void this.requestRenew(peerId);
+  }
+
+  private async lockPeerIfNeeded(peerId: PeerId): Promise<void> {
+    const lockedConnections = this.getLockedConnections();
+    const neededPeers = this.numPeersToUse - lockedConnections.length;
+
+    if (neededPeers === 0) {
+      return;
     }
-    return this.addMultiplePeers(additionalPeers);
+
+    this.getUnlockedConnections()
+      .filter((c) => c.remotePeer.equals(peerId))
+      .map((c) => this.lockConnection(c));
   }
 
-  /**
-   * Finds additional peers.
-   * @param numPeers The number of peers to find.
-   */
-  public async findPeers(numPeers: number): Promise<Peer[]> {
-    const connectedPeers = await this.core.getPeers();
-
-    return this.readMutex.runExclusive(async () => {
-      const newPeers = connectedPeers
-        .filter((peer) => !this.peers.has(peer.id.toString()))
-        .slice(0, numPeers);
-
-      return newPeers;
-    });
+  private getLockedConnections(): Connection[] {
+    return this.libp2p
+      .getConnections()
+      .filter((c) => c.status === "open" && this.isConnectionLocked(c));
   }
 
-  public async addMultiplePeers(peers: Peer[]): Promise<Peer[]> {
-    const addedPeers: Peer[] = [];
-    for (const peer of peers) {
-      await this.addPeer(peer);
-      addedPeers.push(peer);
-    }
-    return addedPeers;
+  private getUnlockedConnections(): Connection[] {
+    return this.libp2p
+      .getConnections()
+      .filter((c) => c.status === "open" && !this.isConnectionLocked(c));
+  }
+
+  private lockConnection(c: Connection): Connection {
+    log.info(`Locking connection for peerId=${c.remotePeer.toString()}`);
+    c.tags.push(CONNECTION_LOCK_TAG);
+    return c;
+  }
+
+  private isConnectionLocked(c: Connection): boolean {
+    return c.tags.includes(CONNECTION_LOCK_TAG);
+  }
+
+  private async mapConnectionToPeer(c: Connection): Promise<Peer> {
+    const peerId = c.remotePeer;
+    return this.libp2p.peerStore.get(peerId);
   }
 }

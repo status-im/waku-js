@@ -30,6 +30,7 @@ import { groupByContentTopic, Logger } from "@waku/utils";
 
 import { ReliabilityMonitorManager } from "../../reliability_monitor/index.js";
 import { ReceiverReliabilityMonitor } from "../../reliability_monitor/receiver.js";
+import { PeerManager } from "../peer_manager.js";
 
 import {
   DEFAULT_KEEP_ALIVE,
@@ -57,10 +58,7 @@ export class SubscriptionManager implements ISubscription {
     private readonly pubsubTopic: PubsubTopic,
     private readonly protocol: FilterCore,
     private readonly connectionManager: ConnectionManager,
-    private readonly getPeers: () => Peer[],
-    private readonly renewPeer: (
-      peerToDisconnect: PeerId
-    ) => Promise<Peer | undefined>,
+    private readonly peerManager: PeerManager,
     private readonly libp2p: Libp2p,
     private readonly lightPush?: ILightPush
   ) {
@@ -69,11 +67,9 @@ export class SubscriptionManager implements ISubscription {
 
     this.reliabilityMonitor = ReliabilityMonitorManager.createReceiverMonitor(
       this.pubsubTopic,
-      this.getPeers.bind(this),
-      this.renewPeer.bind(this),
+      this.peerManager,
       () => Array.from(this.subscriptionCallbacks.keys()),
       this.protocol.subscribe.bind(this.protocol),
-      this.protocol.addLibp2pEventListener.bind(this.protocol),
       this.sendLightPushCheckMessage.bind(this)
     );
   }
@@ -116,7 +112,8 @@ export class SubscriptionManager implements ISubscription {
     const decodersGroupedByCT = groupByContentTopic(decodersArray);
     const contentTopics = Array.from(decodersGroupedByCT.keys());
 
-    const promises = this.getPeers().map(async (peer) =>
+    const peers = await this.peerManager.getPeers();
+    const promises = peers.map(async (peer) =>
       this.subscribeWithPeerVerification(peer, contentTopics)
     );
 
@@ -153,7 +150,8 @@ export class SubscriptionManager implements ISubscription {
   public async unsubscribe(
     contentTopics: ContentTopic[]
   ): Promise<SDKProtocolResult> {
-    const promises = this.getPeers().map(async (peer) => {
+    const peers = await this.peerManager.getPeers();
+    const promises = peers.map(async (peer) => {
       const response = await this.protocol.unsubscribe(
         this.pubsubTopic,
         peer,
@@ -179,7 +177,9 @@ export class SubscriptionManager implements ISubscription {
 
   public async ping(peerId?: PeerId): Promise<SDKProtocolResult> {
     log.info("Sending keep-alive ping");
-    const peers = peerId ? [peerId] : this.getPeers().map((peer) => peer.id);
+    const peers = peerId
+      ? [peerId]
+      : (await this.peerManager.getPeers()).map((peer) => peer.id);
 
     const promises = peers.map((peerId) => this.pingSpecificPeer(peerId));
     const results = await Promise.allSettled(promises);
@@ -188,7 +188,8 @@ export class SubscriptionManager implements ISubscription {
   }
 
   public async unsubscribeAll(): Promise<SDKProtocolResult> {
-    const promises = this.getPeers().map(async (peer) =>
+    const peers = await this.peerManager.getPeers();
+    const promises = peers.map(async (peer) =>
       this.protocol.unsubscribeAll(this.pubsubTopic, peer)
     );
 
@@ -241,6 +242,7 @@ export class SubscriptionManager implements ISubscription {
       peer,
       contentTopics
     );
+
     await this.sendLightPushCheckMessage(peer);
     return result;
   }
@@ -271,7 +273,8 @@ export class SubscriptionManager implements ISubscription {
   }
 
   private async pingSpecificPeer(peerId: PeerId): Promise<CoreProtocolResult> {
-    const peer = this.getPeers().find((p) => p.id.equals(peerId));
+    const peers = await this.peerManager.getPeers();
+    const peer = peers.find((p) => p.id.equals(peerId));
     if (!peer) {
       return {
         success: null,

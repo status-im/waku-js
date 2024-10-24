@@ -10,7 +10,6 @@ import {
   IConnectionStateEvents,
   IPeersByDiscoveryEvents,
   IRelay,
-  KeepAliveOptions,
   PeersByDiscoveryResult,
   PubsubTopic,
   ShardInfo
@@ -20,18 +19,31 @@ import { decodeRelayShard, shardInfoToPubsubTopics } from "@waku/utils";
 import { Logger } from "@waku/utils";
 
 import { KeepAliveManager } from "./keep_alive_manager.js";
+import { getPeerPing } from "./utils.js";
 
 const log = new Logger("connection-manager");
 
-export const DEFAULT_MAX_BOOTSTRAP_PEERS_ALLOWED = 1;
-export const DEFAULT_MAX_DIAL_ATTEMPTS_FOR_PEER = 3;
-export const DEFAULT_MAX_PARALLEL_DIALS = 3;
+const DEFAULT_MAX_BOOTSTRAP_PEERS_ALLOWED = 1;
+const DEFAULT_MAX_DIAL_ATTEMPTS_FOR_PEER = 3;
+const DEFAULT_MAX_PARALLEL_DIALS = 3;
+
+const DEFAULT_PING_KEEP_ALIVE_SEC = 5 * 60;
+const DEFAULT_RELAY_KEEP_ALIVE_SEC = 5 * 60;
+
+type ConnectionManagerConstructorOptions = {
+  libp2p: Libp2p;
+  pubsubTopics: PubsubTopic[];
+  relay?: IRelay;
+  config?: Partial<ConnectionManagerOptions>;
+};
 
 export class ConnectionManager
   extends TypedEventEmitter<IPeersByDiscoveryEvents & IConnectionStateEvents>
   implements IConnectionManager
 {
-  private static instances = new Map<string, ConnectionManager>();
+  // TODO(weboko): make it private
+  public readonly pubsubTopics: PubsubTopic[];
+
   private keepAliveManager: KeepAliveManager;
   private options: ConnectionManagerOptions;
   private libp2p: Libp2p;
@@ -49,29 +61,6 @@ export class ConnectionManager
     }
 
     return this.isP2PNetworkConnected;
-  }
-
-  public static create(
-    peerId: string,
-    libp2p: Libp2p,
-    keepAliveOptions: KeepAliveOptions,
-    pubsubTopics: PubsubTopic[],
-    relay?: IRelay,
-    options?: ConnectionManagerOptions
-  ): ConnectionManager {
-    let instance = ConnectionManager.instances.get(peerId);
-    if (!instance) {
-      instance = new ConnectionManager(
-        libp2p,
-        keepAliveOptions,
-        pubsubTopics,
-        relay,
-        options
-      );
-      ConnectionManager.instances.set(peerId, instance);
-    }
-
-    return instance;
   }
 
   public stop(): void {
@@ -156,27 +145,26 @@ export class ConnectionManager
     };
   }
 
-  private constructor(
-    libp2p: Libp2p,
-    keepAliveOptions: KeepAliveOptions,
-    public readonly configuredPubsubTopics: PubsubTopic[],
-    relay?: IRelay,
-    options?: Partial<ConnectionManagerOptions>
-  ) {
+  public constructor(options: ConnectionManagerConstructorOptions) {
     super();
-    this.libp2p = libp2p;
-    this.configuredPubsubTopics = configuredPubsubTopics;
+    this.libp2p = options.libp2p;
+    this.pubsubTopics = options.pubsubTopics;
     this.options = {
       maxDialAttemptsForPeer: DEFAULT_MAX_DIAL_ATTEMPTS_FOR_PEER,
       maxBootstrapPeersAllowed: DEFAULT_MAX_BOOTSTRAP_PEERS_ALLOWED,
       maxParallelDials: DEFAULT_MAX_PARALLEL_DIALS,
-      ...options
+      pingKeepAlive: DEFAULT_PING_KEEP_ALIVE_SEC,
+      relayKeepAlive: DEFAULT_RELAY_KEEP_ALIVE_SEC,
+      ...options.config
     };
 
     this.keepAliveManager = new KeepAliveManager({
-      relay,
-      libp2p,
-      options: keepAliveOptions
+      relay: options.relay,
+      libp2p: options.libp2p,
+      options: {
+        pingKeepAlive: this.options.pingKeepAlive,
+        relayKeepAlive: this.options.relayKeepAlive
+      }
     });
 
     this.startEventListeners()
@@ -191,6 +179,29 @@ export class ConnectionManager
     this.dialPeerStorePeers().catch((error) =>
       log.error(`Unexpected error while dialing peer store peers`, error)
     );
+  }
+
+  public async getConnectedPeers(codec?: string): Promise<Peer[]> {
+    const peerIDs = this.libp2p.getPeers();
+
+    if (peerIDs.length === 0) {
+      return [];
+    }
+
+    const peers = await Promise.all(
+      peerIDs.map(async (id) => {
+        try {
+          return await this.libp2p.peerStore.get(id);
+        } catch (e) {
+          return null;
+        }
+      })
+    );
+
+    return peers
+      .filter((p) => !!p)
+      .filter((p) => (codec ? (p as Peer).protocols.includes(codec) : true))
+      .sort((left, right) => getPeerPing(left) - getPeerPing(right)) as Peer[];
   }
 
   private async dialPeerStorePeers(): Promise<void> {
@@ -478,7 +489,7 @@ export class ConnectionManager
 
       log.warn(
         `Discovered peer ${peerId.toString()} with ShardInfo ${shardInfo} is not part of any of the configured pubsub topics (${
-          this.configuredPubsubTopics
+          this.pubsubTopics
         }).
             Not dialing.`
       );
@@ -573,7 +584,7 @@ export class ConnectionManager
     const pubsubTopics = shardInfoToPubsubTopics(shardInfo);
 
     const isTopicConfigured = pubsubTopics.some((topic) =>
-      this.configuredPubsubTopics.includes(topic)
+      this.pubsubTopics.includes(topic)
     );
     return isTopicConfigured;
   }

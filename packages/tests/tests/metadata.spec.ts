@@ -253,7 +253,9 @@ describe("Metadata Protocol", function () {
 
     waku = await createLightNode({
       networkConfig: shardInfo,
-      pingKeepAlive: 1
+      connectionManager: {
+        pingKeepAlive: 1
+      }
     });
     await waku.start();
     await waku.libp2p.dialProtocol(nwaku1Ma, MetadataCodec);

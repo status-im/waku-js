@@ -10,9 +10,7 @@ import {
 import { messageHash } from "@waku/message-hash";
 import { ensurePubsubTopicIsConfigured, isDefined, Logger } from "@waku/utils";
 
-import { BaseProtocolSDK } from "../base_protocol.js";
-
-const DEFAULT_NUM_PEERS = 1;
+import { PeerManager } from "../peer_manager.js";
 
 const log = new Logger("waku:store:sdk");
 
@@ -20,18 +18,15 @@ const log = new Logger("waku:store:sdk");
  * StoreSDK is an implementation of the IStoreSDK interface.
  * It provides methods to interact with the Waku Store protocol.
  */
-export class Store extends BaseProtocolSDK implements IStore {
+export class Store implements IStore {
   public readonly protocol: StoreCore;
 
-  public constructor(connectionManager: ConnectionManager, libp2p: Libp2p) {
-    super(
-      new StoreCore(connectionManager.configuredPubsubTopics, libp2p),
-      connectionManager,
-      {
-        numPeersToUse: DEFAULT_NUM_PEERS
-      }
-    );
-    this.protocol = this.core as StoreCore;
+  public constructor(
+    connectionManager: ConnectionManager,
+    libp2p: Libp2p,
+    private peerManager: PeerManager
+  ) {
+    this.protocol = new StoreCore(connectionManager.pubsubTopics, libp2p);
   }
 
   /**
@@ -58,12 +53,9 @@ export class Store extends BaseProtocolSDK implements IStore {
       ...options
     };
 
-    const peer = (
-      await this.protocol.getPeers({
-        numPeers: this.numPeersToUse,
-        maxBootstrapPeers: 1
-      })
-    )[0];
+    const peers = await this.peerManager.getPeers();
+    const peer = peers[0];
+
     if (!peer) {
       log.error("No peers available to query");
       throw new Error("No peers available to query");
@@ -237,9 +229,10 @@ export class Store extends BaseProtocolSDK implements IStore {
  * @returns A function that takes a Libp2p instance and returns a StoreSDK instance.
  */
 export function wakuStore(
-  connectionManager: ConnectionManager
+  connectionManager: ConnectionManager,
+  peerManager: PeerManager
 ): (libp2p: Libp2p) => IStore {
   return (libp2p: Libp2p) => {
-    return new Store(connectionManager, libp2p);
+    return new Store(connectionManager, libp2p, peerManager);
   };
 }

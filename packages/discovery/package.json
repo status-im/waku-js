@@ -80,7 +80,7 @@
     "sinon": "^18.0.0"
   },
   "peerDependencies": {
-    "@libp2p/interface": "2.0.1"
+    "@libp2p/interface": "^2.1.3"
   },
   "peerDependenciesMeta": {
     "@libp2p/interface": {

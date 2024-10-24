@@ -1,5 +1,5 @@
 import type { IDecodedMessage, IDecoder } from "./message.js";
-import type { IBaseProtocolCore, IBaseProtocolSDK } from "./protocols.js";
+import type { IBaseProtocolCore } from "./protocols.js";
 
 export type StoreCursor = Uint8Array;
 
@@ -78,7 +78,7 @@ export type QueryRequestParams = {
 
 export type IStoreCore = IBaseProtocolCore;
 
-export type IStore = IBaseProtocolSDK & {
+export type IStore = {
   protocol: IBaseProtocolCore;
   createCursor(message: IDecodedMessage): StoreCursor;
   queryGenerator: <T extends IDecodedMessage>(

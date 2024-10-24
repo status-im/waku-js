@@ -1,10 +1,11 @@
-import type { Peer, PeerId } from "@libp2p/interface";
+import type { Peer } from "@libp2p/interface";
 import {
   ContentTopic,
   CoreProtocolResult,
-  Libp2p,
   PubsubTopic
 } from "@waku/interfaces";
+
+import { PeerManager } from "../protocols/peer_manager.js";
 
 import { ReceiverReliabilityMonitor } from "./receiver.js";
 
@@ -16,15 +17,13 @@ export class ReliabilityMonitorManager {
 
   public static createReceiverMonitor(
     pubsubTopic: PubsubTopic,
-    getPeers: () => Peer[],
-    renewPeer: (peerId: PeerId) => Promise<Peer | undefined>,
+    peerManager: PeerManager,
     getContentTopics: () => ContentTopic[],
     protocolSubscribe: (
       pubsubTopic: PubsubTopic,
       peer: Peer,
       contentTopics: ContentTopic[]
     ) => Promise<CoreProtocolResult>,
-    addLibp2pEventListener: Libp2p["addEventListener"],
     sendLightPushMessage: (peer: Peer) => Promise<void>
   ): ReceiverReliabilityMonitor {
     if (ReliabilityMonitorManager.receiverMonitors.has(pubsubTopic)) {
@@ -33,11 +32,9 @@ export class ReliabilityMonitorManager {
 
     const monitor = new ReceiverReliabilityMonitor(
       pubsubTopic,
-      getPeers,
-      renewPeer,
+      peerManager,
       getContentTopics,
       protocolSubscribe,
-      addLibp2pEventListener,
       sendLightPushMessage
     );
     ReliabilityMonitorManager.receiverMonitors.set(pubsubTopic, monitor);

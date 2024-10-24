@@ -10,6 +10,8 @@ import { utf8ToBytes } from "@waku/utils/bytes";
 import { expect } from "chai";
 import sinon from "sinon";
 
+import { PeerManager } from "../peer_manager.js";
+
 import { LightPush } from "./light_push.js";
 
 const PUBSUB_TOPIC = "/waku/2/rs/1/4";
@@ -156,9 +158,9 @@ function mockLightPush(options: MockLightPushOptions): LightPush {
   return new LightPush(
     {
       configuredPubsubTopics: options.pubsubTopics || [PUBSUB_TOPIC]
-    } as ConnectionManager,
-    options.libp2p,
-    { numPeersToUse: options.numPeersToUse }
+    } as unknown as ConnectionManager,
+    {} as unknown as PeerManager,
+    options.libp2p
   );
 }
 

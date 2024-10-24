@@ -1,13 +1,17 @@
 import type { PeerId } from "@libp2p/interface";
 import type { IRelay, Libp2p, PeerIdStr } from "@waku/interfaces";
-import type { KeepAliveOptions } from "@waku/interfaces";
 import { Logger, pubsubTopicToSingleShardInfo } from "@waku/utils";
 import { utf8ToBytes } from "@waku/utils/bytes";
 
-import { createEncoder } from "./message/version_0.js";
+import { createEncoder } from "../message/version_0.js";
 
-export const RelayPingContentTopic = "/relay-ping/1/ping/null";
+const RelayPingContentTopic = "/relay-ping/1/ping/null";
 const log = new Logger("keep-alive");
+
+type KeepAliveOptions = {
+  pingKeepAlive: number;
+  relayKeepAlive: number;
+};
 
 type CreateKeepAliveManagerOptions = {
   options: KeepAliveOptions;

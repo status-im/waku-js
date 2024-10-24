@@ -8,22 +8,44 @@ export enum Tags {
   LOCAL = "local-peer-cache"
 }
 
-export interface ConnectionManagerOptions {
+export type ConnectionManagerOptions = {
   /**
-   * Number of attempts before a peer is considered non-dialable
-   * This is used to not spam a peer with dial attempts when it is not dialable
+   * Number of attempts before a peer is considered non-dialable.
+   * This is used to not spam a peer with dial attempts when it is not dialable.
+   *
+   * @default 3
    */
   maxDialAttemptsForPeer: number;
+
   /**
-   * Max number of bootstrap peers allowed to be connected to, initially
-   * This is used to increase intention of dialing non-bootstrap peers, found using other discovery mechanisms (like Peer Exchange)
+   * Max number of bootstrap peers allowed to be connected to initially.
+   * This is used to increase intention of dialing non-bootstrap peers, found using other discovery mechanisms (like Peer Exchange).
+   *
+   * @default 1
    */
   maxBootstrapPeersAllowed: number;
+
   /**
-   * Max number of parallel dials allowed
+   * Max number of parallel dials allowed.
+   *
+   * @default 3
    */
   maxParallelDials: number;
-}
+
+  /**
+   * Keep alive libp2p pings interval in seconds.
+   *
+   * @default 300 seconds
+   */
+  pingKeepAlive: number;
+
+  /**
+   * Gossip sub specific keep alive interval in seconds.
+   *
+   * @default 300 seconds
+   */
+  relayKeepAlive: number;
+};
 
 export enum EPeersByDiscoveryEvents {
   PEER_DISCOVERY_BOOTSTRAP = "peer:discovery:bootstrap",
@@ -63,7 +85,8 @@ export interface IConnectionStateEvents {
 
 export interface IConnectionManager
   extends TypedEventEmitter<IPeersByDiscoveryEvents & IConnectionStateEvents> {
-  configuredPubsubTopics: PubsubTopic[];
+  pubsubTopics: PubsubTopic[];
+  getConnectedPeers(codec?: string): Promise<Peer[]>;
   dropConnection(peerId: PeerId): Promise<void>;
   getPeersByDiscovery(): Promise<PeersByDiscoveryResult>;
   stop(): void;

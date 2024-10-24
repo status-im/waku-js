@@ -32,7 +32,7 @@ export class StoreCore extends BaseProtocol implements IStoreCore {
     public readonly pubsubTopics: PubsubTopic[],
     libp2p: Libp2p
   ) {
-    super(StoreCodec, libp2p.components, log, pubsubTopics);
+    super(StoreCodec, libp2p.components, pubsubTopics);
   }
 
   public async *queryPerPage<T extends IDecodedMessage>(

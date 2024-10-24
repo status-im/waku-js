@@ -15,11 +15,10 @@ export { LightPushCodec, LightPushCore } from "./lib/light_push/index.js";
 export * as waku_store from "./lib/store/index.js";
 export { StoreCore, StoreCodec } from "./lib/store/index.js";
 
-export { ConnectionManager } from "./lib/connection_manager.js";
+export { ConnectionManager } from "./lib/connection_manager/index.js";
 
 export { getHealthManager } from "./lib/health_manager.js";
 
-export { KeepAliveManager } from "./lib/keep_alive_manager.js";
 export { StreamManager } from "./lib/stream_manager/index.js";
 
 export { MetadataCodec, wakuMetadata } from "./lib/metadata/index.js";

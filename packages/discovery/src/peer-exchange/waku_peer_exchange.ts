@@ -32,7 +32,7 @@ export class WakuPeerExchange extends BaseProtocol implements IPeerExchange {
     components: Libp2pComponents,
     pubsubTopics: PubsubTopic[]
   ) {
-    super(PeerExchangeCodec, components, log, pubsubTopics);
+    super(PeerExchangeCodec, components, pubsubTopics);
   }
 
   /**
