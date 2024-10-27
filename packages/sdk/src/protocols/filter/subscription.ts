@@ -12,6 +12,7 @@ import {
   type ContentTopic,
   type CoreProtocolResult,
   EConnectionStateEvents,
+  FilterProtocolOptions,
   type IDecodedMessage,
   type IDecoder,
   type ILightPush,
@@ -22,7 +23,6 @@ import {
   ProtocolError,
   type PubsubTopic,
   type SDKProtocolResult,
-  type SubscribeOptions,
   SubscriptionCallback
 } from "@waku/interfaces";
 import { WakuMessage } from "@waku/proto";
@@ -32,22 +32,16 @@ import { ReliabilityMonitorManager } from "../../reliability_monitor/index.js";
 import { ReceiverReliabilityMonitor } from "../../reliability_monitor/receiver.js";
 import { PeerManager } from "../peer_manager.js";
 
-import {
-  DEFAULT_KEEP_ALIVE,
-  DEFAULT_LIGHT_PUSH_FILTER_CHECK,
-  DEFAULT_LIGHT_PUSH_FILTER_CHECK_INTERVAL,
-  DEFAULT_SUBSCRIBE_OPTIONS
-} from "./constants.js";
+import { DEFAULT_LIGHT_PUSH_FILTER_CHECK_INTERVAL } from "./constants.js";
 
 const log = new Logger("sdk:filter:subscription_manager");
 
-export class SubscriptionManager implements ISubscription {
+export class Subscription implements ISubscription {
   private reliabilityMonitor: ReceiverReliabilityMonitor;
 
-  private keepAliveTimeout: number = DEFAULT_KEEP_ALIVE;
+  private keepAliveTimeout: number;
+  private enableLightPushFilterCheck: boolean;
   private keepAliveInterval: ReturnType<typeof setInterval> | null = null;
-
-  private enableLightPushFilterCheck = DEFAULT_LIGHT_PUSH_FILTER_CHECK;
 
   private subscriptionCallbacks: Map<
     ContentTopic,
@@ -60,6 +54,7 @@ export class SubscriptionManager implements ISubscription {
     private readonly connectionManager: ConnectionManager,
     private readonly peerManager: PeerManager,
     private readonly libp2p: Libp2p,
+    config: FilterProtocolOptions,
     private readonly lightPush?: ILightPush
   ) {
     this.pubsubTopic = pubsubTopic;
@@ -72,18 +67,15 @@ export class SubscriptionManager implements ISubscription {
       this.protocol.subscribe.bind(this.protocol),
       this.sendLightPushCheckMessage.bind(this)
     );
+    this.reliabilityMonitor.setMaxPingFailures(config.pingsBeforePeerRenewed);
+    this.keepAliveTimeout = config.keepAliveIntervalMs;
+    this.enableLightPushFilterCheck = config.enableLightPushFilterCheck;
   }
 
   public async subscribe<T extends IDecodedMessage>(
     decoders: IDecoder<T> | IDecoder<T>[],
-    callback: Callback<T>,
-    options: SubscribeOptions = DEFAULT_SUBSCRIBE_OPTIONS
+    callback: Callback<T>
   ): Promise<SDKProtocolResult> {
-    this.reliabilityMonitor.setMaxPingFailures(options.pingsBeforePeerRenewed);
-    this.keepAliveTimeout = options.keepAlive || DEFAULT_KEEP_ALIVE;
-    this.enableLightPushFilterCheck =
-      options?.enableLightPushFilterCheck || DEFAULT_LIGHT_PUSH_FILTER_CHECK;
-
     const decodersArray = Array.isArray(decoders) ? decoders : [decoders];
 
     // check that all decoders are configured for the same pubsub topic as this subscription

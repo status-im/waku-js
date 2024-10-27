@@ -15,17 +15,34 @@ export type SubscriptionCallback<T extends IDecodedMessage> = {
   callback: Callback<T>;
 };
 
-export type SubscribeOptions = {
-  keepAlive?: number;
-  pingsBeforePeerRenewed?: number;
-  enableLightPushFilterCheck?: boolean;
+export type FilterProtocolOptions = {
+  /**
+   * Interval with which Filter subscription will attempt to send ping requests to subscribed peers.
+   *
+   * @default 60_000
+   */
+  keepAliveIntervalMs: number;
+
+  /**
+   * Number of failed pings allowed to make to a remote peer before attempting to subscribe to a new one.
+   *
+   * @default 3
+   */
+  pingsBeforePeerRenewed: number;
+
+  /**
+   * Enables js-waku to send probe LightPush message over subscribed pubsubTopics on created subscription.
+   * In case message won't be received back through Filter - js-waku will attempt to subscribe to another peer.
+   *
+   * @default false
+   */
+  enableLightPushFilterCheck: boolean;
 };
 
 export interface ISubscription {
   subscribe<T extends IDecodedMessage>(
     decoders: IDecoder<T> | IDecoder<T>[],
-    callback: Callback<T>,
-    options?: SubscribeOptions
+    callback: Callback<T>
   ): Promise<SDKProtocolResult>;
 
   unsubscribe(contentTopics: ContentTopic[]): Promise<SDKProtocolResult>;
@@ -38,8 +55,7 @@ export interface ISubscription {
 export type IFilter = IReceiver & { protocol: IBaseProtocolCore } & {
   subscribe<T extends IDecodedMessage>(
     decoders: IDecoder<T> | IDecoder<T>[],
-    callback: Callback<T>,
-    subscribeOptions?: SubscribeOptions
+    callback: Callback<T>
   ): Promise<SubscribeResult>;
 };
 

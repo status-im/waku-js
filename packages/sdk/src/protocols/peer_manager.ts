@@ -22,6 +22,9 @@ export class PeerManager {
   private readonly libp2p: Libp2p;
 
   public constructor(params: PeerManagerParams) {
+    this.onConnected = this.onConnected.bind(this);
+    this.onDisconnected = this.onDisconnected.bind(this);
+
     this.numPeersToUse =
       params?.config?.numPeersToUse || DEFAULT_NUM_PEERS_TO_USE;
 
@@ -58,7 +61,18 @@ export class PeerManager {
         .map((c) => this.mapConnectionToPeer(c))
     );
 
-    return result[0];
+    const newPeer = result[0];
+
+    if (!newPeer) {
+      log.warn(`requestRenew: Couldn't renew peer ${peerId.toString()}.`);
+      return;
+    }
+
+    log.info(
+      `requestRenew: Renewed peer ${peerId.toString()} to ${newPeer.id.toString()}`
+    );
+
+    return newPeer;
   }
 
   private startConnectionListener(): void {
@@ -107,7 +121,9 @@ export class PeerManager {
   }
 
   private lockConnection(c: Connection): Connection {
-    log.info(`Locking connection for peerId=${c.remotePeer.toString()}`);
+    log.info(
+      `requestRenew: Locking connection for peerId=${c.remotePeer.toString()}`
+    );
     c.tags.push(CONNECTION_LOCK_TAG);
     return c;
   }

@@ -24,21 +24,7 @@ import { ReliabilityMonitorManager } from "../reliability_monitor/index.js";
 
 import { waitForRemotePeer } from "./wait_for_remote_peer.js";
 
-export const DefaultUserAgent = "js-waku";
-export const DefaultPingMaxInboundStreams = 10;
-
 const log = new Logger("waku");
-
-export interface WakuOptions {
-  /**
-   * Set the user agent string to be used in identification of the node.
-   * @default {@link @waku/core.DefaultUserAgent}
-   */
-  userAgent?: string;
-}
-
-export type CreateWakuNodeOptions = ProtocolCreateOptions &
-  Partial<WakuOptions>;
 
 type ProtocolsEnabled = {
   filter?: boolean;
@@ -59,7 +45,7 @@ export class WakuNode implements IWaku {
 
   public constructor(
     public readonly pubsubTopics: PubsubTopic[],
-    options: CreateWakuNodeOptions,
+    options: ProtocolCreateOptions,
     libp2p: Libp2p,
     protocolsEnabled: ProtocolsEnabled,
     relay?: IRelay
@@ -106,7 +92,8 @@ export class WakuNode implements IWaku {
       const filter = wakuFilter(
         this.connectionManager,
         this.peerManager,
-        this.lightPush
+        this.lightPush,
+        options.filter
       );
       this.filter = filter(libp2p);
     }
