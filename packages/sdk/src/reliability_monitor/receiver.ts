@@ -115,7 +115,7 @@ export class ReceiverReliabilityMonitor {
       return;
     }
 
-    const timeout = window.setTimeout(
+    const timeout = setTimeout(
       (async () => {
         const receivedAnyMessage = this.verifiedPeers.has(peerIdStr);
         const receivedTestMessage = this.receivedMessagesFormPeer.has(
@@ -136,7 +136,7 @@ export class ReceiverReliabilityMonitor {
         await this.renewAndSubscribePeer(peerId);
       }) as () => void,
       MESSAGE_VERIFICATION_DELAY
-    );
+    ) as unknown as number;
 
     this.scheduledVerification.set(peerIdStr, timeout);
   }
