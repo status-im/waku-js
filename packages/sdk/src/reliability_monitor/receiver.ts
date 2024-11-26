@@ -3,28 +3,25 @@ import {
   ContentTopic,
   CoreProtocolResult,
   IProtoMessage,
+  Libp2p,
   PeerIdStr,
   PubsubTopic
 } from "@waku/interfaces";
 import { messageHashStr } from "@waku/message-hash";
-import { WakuMessage } from "@waku/proto";
 import { Logger } from "@waku/utils";
-
-type ReceivedMessageHashes = {
-  all: Set<string>;
-  nodes: Record<PeerIdStr, Set<string>>;
-};
-
-const DEFAULT_MAX_MISSED_MESSAGES_THRESHOLD = 3;
+import { bytesToUtf8 } from "@waku/utils/bytes";
 
 const log = new Logger("sdk:receiver:reliability_monitor");
 
 const DEFAULT_MAX_PINGS = 3;
+const MESSAGE_VERIFICATION_DELAY = 5_000;
 
 export class ReceiverReliabilityMonitor {
-  private receivedMessagesHashes: ReceivedMessageHashes;
-  private missedMessagesByPeer: Map<string, number> = new Map();
-  private maxMissedMessagesThreshold = DEFAULT_MAX_MISSED_MESSAGES_THRESHOLD;
+  private receivedMessagesFormPeer = new Set<string>();
+  private receivedMessages = new Set<string>();
+  private scheduledVerification = new Map<string, number>();
+  private verifiedPeers = new Set<string>();
+
   private peerFailures: Map<string, number> = new Map();
   private maxPingFailures: number = DEFAULT_MAX_PINGS;
   private peerRenewalLocks: Set<PeerIdStr> = new Set();
@@ -32,30 +29,22 @@ export class ReceiverReliabilityMonitor {
   public constructor(
     private readonly pubsubTopic: PubsubTopic,
     private getPeers: () => Peer[],
-    private renewPeer: (peerId: PeerId) => Promise<Peer>,
+    private renewPeer: (peerId: PeerId) => Promise<Peer | undefined>,
     private getContentTopics: () => ContentTopic[],
     private protocolSubscribe: (
       pubsubTopic: PubsubTopic,
       peer: Peer,
       contentTopics: ContentTopic[]
-    ) => Promise<CoreProtocolResult>
+    ) => Promise<CoreProtocolResult>,
+    private addLibp2pEventListener: Libp2p["addEventListener"],
+    private sendLightPushMessage: (peer: Peer) => Promise<void>
   ) {
-    const allPeerIdStr = this.getPeers().map((p) => p.id.toString());
-
-    this.receivedMessagesHashes = {
-      all: new Set(),
-      nodes: {
-        ...Object.fromEntries(allPeerIdStr.map((peerId) => [peerId, new Set()]))
+    this.addLibp2pEventListener("peer:disconnect", (evt) => {
+      const peerId = evt.detail;
+      if (this.getPeers().some((p) => p.id.equals(peerId))) {
+        void this.renewAndSubscribePeer(peerId);
       }
-    };
-    allPeerIdStr.forEach((peerId) => this.missedMessagesByPeer.set(peerId, 0));
-  }
-
-  public setMaxMissedMessagesThreshold(value: number | undefined): void {
-    if (value === undefined) {
-      return;
-    }
-    this.maxMissedMessagesThreshold = value;
+    });
   }
 
   public setMaxPingFailures(value: number | undefined): void {
@@ -79,6 +68,9 @@ export class ReceiverReliabilityMonitor {
 
     if (failures >= this.maxPingFailures) {
       try {
+        log.info(
+          `Attempting to renew ${peerId.toString()} due to ping failures.`
+        );
         await this.renewAndSubscribePeer(peerId);
         this.peerFailures.delete(peerId.toString());
       } catch (error) {
@@ -87,120 +79,115 @@ export class ReceiverReliabilityMonitor {
     }
   }
 
-  public processIncomingMessage(
-    message: WakuMessage,
-    pubsubTopic: PubsubTopic,
-    peerIdStr?: string
+  public notifyMessageReceived(
+    peerIdStr: string,
+    message: IProtoMessage
   ): boolean {
-    const alreadyReceived = this.addMessageToCache(
-      message,
-      pubsubTopic,
-      peerIdStr
+    const hash = this.buildMessageHash(message);
+
+    this.verifiedPeers.add(peerIdStr);
+    this.receivedMessagesFormPeer.add(`${peerIdStr}-${hash}`);
+
+    log.info(
+      `notifyMessage received debug: ephemeral:${message.ephemeral}\t${bytesToUtf8(message.payload)}`
     );
-    void this.checkAndRenewPeers();
-    return alreadyReceived;
+    log.info(`notifyMessage received: peer:${peerIdStr}\tmessage:${hash}`);
+
+    if (this.receivedMessages.has(hash)) {
+      return true;
+    }
+
+    this.receivedMessages.add(hash);
+
+    return false;
   }
 
-  private addMessageToCache(
-    message: WakuMessage,
-    pubsubTopic: PubsubTopic,
-    peerIdStr?: string
-  ): boolean {
-    const hashedMessageStr = messageHashStr(
-      pubsubTopic,
-      message as IProtoMessage
-    );
+  public notifyMessageSent(peerId: PeerId, message: IProtoMessage): void {
+    const peerIdStr = peerId.toString();
+    const hash = this.buildMessageHash(message);
 
-    const alreadyReceived =
-      this.receivedMessagesHashes.all.has(hashedMessageStr);
-    this.receivedMessagesHashes.all.add(hashedMessageStr);
+    log.info(`notifyMessage sent debug: ${bytesToUtf8(message.payload)}`);
 
-    if (peerIdStr) {
-      const hashesForPeer = this.receivedMessagesHashes.nodes[peerIdStr];
-      if (!hashesForPeer) {
-        log.warn(
-          `Peer ${peerIdStr} not initialized in receivedMessagesHashes.nodes, adding it.`
+    if (this.scheduledVerification.has(peerIdStr)) {
+      log.warn(
+        `notifyMessage sent: attempting to schedule verification for pending peer:${peerIdStr}\tmessage:${hash}`
+      );
+      return;
+    }
+
+    const timeout = setTimeout(
+      (async () => {
+        const receivedAnyMessage = this.verifiedPeers.has(peerIdStr);
+        const receivedTestMessage = this.receivedMessagesFormPeer.has(
+          `${peerIdStr}-${hash}`
         );
-        this.receivedMessagesHashes.nodes[peerIdStr] = new Set();
-      }
-      this.receivedMessagesHashes.nodes[peerIdStr].add(hashedMessageStr);
-    }
 
-    return alreadyReceived;
+        if (receivedAnyMessage || receivedTestMessage) {
+          log.info(
+            `notifyMessage sent setTimeout: verified that peer pushes filter messages, peer:${peerIdStr}\tmessage:${hash}`
+          );
+          return;
+        }
+
+        log.warn(
+          `notifyMessage sent setTimeout: peer didn't return probe message, attempting renewAndSubscribe, peer:${peerIdStr}\tmessage:${hash}`
+        );
+        this.scheduledVerification.delete(peerIdStr);
+        await this.renewAndSubscribePeer(peerId);
+      }) as () => void,
+      MESSAGE_VERIFICATION_DELAY
+    ) as unknown as number;
+
+    this.scheduledVerification.set(peerIdStr, timeout);
   }
 
-  private async checkAndRenewPeers(): Promise<void> {
-    for (const hash of this.receivedMessagesHashes.all) {
-      for (const [peerIdStr, hashes] of Object.entries(
-        this.receivedMessagesHashes.nodes
-      )) {
-        if (!hashes.has(hash)) {
-          this.incrementMissedMessageCount(peerIdStr);
-          if (this.shouldRenewPeer(peerIdStr)) {
-            log.info(
-              `Peer ${peerIdStr} has missed too many messages, renewing.`
-            );
-            const peerId = this.getPeers().find(
-              (p) => p.id.toString() === peerIdStr
-            )?.id;
-            if (!peerId) {
-              log.error(
-                `Unexpected Error: Peer ${peerIdStr} not found in connected peers.`
-              );
-              continue;
-            }
-            try {
-              await this.renewAndSubscribePeer(peerId);
-            } catch (error) {
-              log.error(`Failed to renew peer ${peerIdStr}: ${error}`);
-            }
-          }
-        }
-      }
-    }
+  public shouldVerifyPeer(peerId: PeerId): boolean {
+    const peerIdStr = peerId.toString();
+
+    const isPeerVerified = this.verifiedPeers.has(peerIdStr);
+    const isVerificationPending = this.scheduledVerification.has(peerIdStr);
+
+    return !(isPeerVerified || isVerificationPending);
+  }
+
+  private buildMessageHash(message: IProtoMessage): string {
+    return messageHashStr(this.pubsubTopic, message);
   }
 
   private async renewAndSubscribePeer(
     peerId: PeerId
   ): Promise<Peer | undefined> {
+    const peerIdStr = peerId.toString();
     try {
-      if (this.peerRenewalLocks.has(peerId.toString())) {
-        log.info(`Peer ${peerId.toString()} is already being renewed.`);
+      if (this.peerRenewalLocks.has(peerIdStr)) {
+        log.info(`Peer ${peerIdStr} is already being renewed.`);
         return;
       }
 
-      this.peerRenewalLocks.add(peerId.toString());
+      this.peerRenewalLocks.add(peerIdStr);
 
       const newPeer = await this.renewPeer(peerId);
+      if (!newPeer) {
+        log.warn(`Failed to renew peer ${peerIdStr}: No new peer found.`);
+        return;
+      }
+
       await this.protocolSubscribe(
         this.pubsubTopic,
         newPeer,
         this.getContentTopics()
       );
 
-      this.receivedMessagesHashes.nodes[newPeer.id.toString()] = new Set();
-      this.missedMessagesByPeer.set(newPeer.id.toString(), 0);
+      await this.sendLightPushMessage(newPeer);
 
-      this.peerFailures.delete(peerId.toString());
-      this.missedMessagesByPeer.delete(peerId.toString());
-      delete this.receivedMessagesHashes.nodes[peerId.toString()];
+      this.peerFailures.delete(peerIdStr);
 
       return newPeer;
     } catch (error) {
-      log.warn(`Failed to renew peer ${peerId.toString()}: ${error}.`);
+      log.error(`Failed to renew peer ${peerIdStr}: ${error}.`);
       return;
     } finally {
-      this.peerRenewalLocks.delete(peerId.toString());
+      this.peerRenewalLocks.delete(peerIdStr);
     }
-  }
-
-  private incrementMissedMessageCount(peerIdStr: string): void {
-    const currentCount = this.missedMessagesByPeer.get(peerIdStr) || 0;
-    this.missedMessagesByPeer.set(peerIdStr, currentCount + 1);
-  }
-
-  private shouldRenewPeer(peerIdStr: string): boolean {
-    const missedMessages = this.missedMessagesByPeer.get(peerIdStr) || 0;
-    return missedMessages > this.maxMissedMessagesThreshold;
   }
 }

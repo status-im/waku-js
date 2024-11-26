@@ -272,4 +272,52 @@ describe("Waku Filter: Peer Management: E2E", function () {
 
     expect(waku.filter.connectedPeers.length).to.equal(2);
   });
+
+  it("Renews peer for Filter on peer:disconnect event", async function () {
+    this.timeout(30000);
+
+    const messages: DecodedMessage[] = [];
+    const { error, subscription } = await waku.filter.subscribe(
+      [decoder],
+      (msg) => {
+        messages.push(msg);
+      }
+    );
+
+    if (error) {
+      throw error;
+    }
+
+    const initialPeers = waku.filter.connectedPeers;
+    expect(initialPeers.length).to.equal(waku.filter.numPeersToUse);
+
+    const peerToDisconnect = initialPeers[0];
+    await waku.connectionManager.dropConnection(peerToDisconnect.id);
+
+    await delay(5000);
+
+    expect(waku.filter.connectedPeers.length).to.equal(
+      waku.filter.numPeersToUse
+    );
+
+    const stillConnected = waku.filter.connectedPeers.some((peer) =>
+      peer.id.equals(peerToDisconnect.id)
+    );
+    expect(stillConnected).to.be.false;
+
+    await waku.lightPush.send(encoder, {
+      payload: utf8ToBytes("Hello after disconnect")
+    });
+
+    await delay(2000);
+
+    expect(messages.length).to.equal(1);
+    expect(new TextDecoder().decode(messages[0].payload)).to.equal(
+      "Hello after disconnect"
+    );
+
+    const pingResult = await subscription.ping();
+    expect(pingResult.successes.length).to.equal(waku.filter.numPeersToUse);
+    expect(pingResult.failures.length).to.equal(0);
+  });
 });

@@ -6,6 +6,7 @@ import {
   type IDecodedMessage,
   type IDecoder,
   type IFilter,
+  type ILightPush,
   type Libp2p,
   NetworkConfig,
   type ProtocolCreateOptions,
@@ -38,7 +39,8 @@ class Filter extends BaseProtocolSDK implements IFilter {
 
   public constructor(
     connectionManager: ConnectionManager,
-    libp2p: Libp2p,
+    private libp2p: Libp2p,
+    private lightPush?: ILightPush,
     options?: ProtocolCreateOptions
   ) {
     super(
@@ -51,9 +53,9 @@ class Filter extends BaseProtocolSDK implements IFilter {
             );
             return;
           }
-
           await subscription.processIncomingMessage(wakuMessage, peerIdStr);
         },
+
         connectionManager.configuredPubsubTopics,
         libp2p
       ),
@@ -195,7 +197,9 @@ class Filter extends BaseProtocolSDK implements IFilter {
           this.protocol,
           this.connectionManager,
           () => this.connectedPeers,
-          this.renewPeer.bind(this)
+          this.renewPeer.bind(this),
+          this.libp2p,
+          this.lightPush
         )
       );
 
@@ -300,7 +304,9 @@ class Filter extends BaseProtocolSDK implements IFilter {
 
 export function wakuFilter(
   connectionManager: ConnectionManager,
+  lightPush?: ILightPush,
   init?: ProtocolCreateOptions
 ): (libp2p: Libp2p) => IFilter {
-  return (libp2p: Libp2p) => new Filter(connectionManager, libp2p, init);
+  return (libp2p: Libp2p) =>
+    new Filter(connectionManager, libp2p, lightPush, init);
 }

@@ -1,6 +1,7 @@
+import { generateKeyPair } from "@libp2p/crypto/keys";
 import { TopicValidatorResult } from "@libp2p/interface";
 import type { UnsignedMessage } from "@libp2p/interface";
-import { createSecp256k1PeerId } from "@libp2p/peer-id-factory";
+import { peerIdFromPrivateKey } from "@libp2p/peer-id";
 import { createEncoder } from "@waku/core";
 import { determinePubsubTopic } from "@waku/utils";
 import { expect } from "chai";
@@ -15,7 +16,8 @@ describe("Message Validator", () => {
   it("Accepts a valid Waku Message", async () => {
     await fc.assert(
       fc.asyncProperty(fc.uint8Array({ minLength: 1 }), async (payload) => {
-        const peerId = await createSecp256k1PeerId();
+        const privateKey = await generateKeyPair("secp256k1");
+        const peerId = peerIdFromPrivateKey(privateKey);
 
         const encoder = createEncoder({
           contentTopic: TestContentTopic,
@@ -39,7 +41,8 @@ describe("Message Validator", () => {
   it("Rejects garbage", async () => {
     await fc.assert(
       fc.asyncProperty(fc.uint8Array(), async (data) => {
-        const peerId = await createSecp256k1PeerId();
+        const peerId =
+          await generateKeyPair("secp256k1").then(peerIdFromPrivateKey);
 
         const message: UnsignedMessage = {
           type: "unsigned",

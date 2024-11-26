@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The file is maintained by [Release Please](https://github.com/googleapis/release-please) based on [Conventional Commits](https://www.conventionalcommits.org) specification,
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.28](https://github.com/waku-org/js-waku/compare/interfaces-v0.0.27...interfaces-v0.0.28) (2024-10-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* lighten retry logic for LightPush ([#2182](https://github.com/waku-org/js-waku/issues/2182))
+
+### Features
+
+* **filter:** Enhancing protocol peer management with mutex locks  ([#2137](https://github.com/waku-org/js-waku/issues/2137)) ([b2efce5](https://github.com/waku-org/js-waku/commit/b2efce5ec27807325685cc32f9333805e6321ac7))
+* **filter:** Reliability monitor as a separate class to handle reliability logic ([#2117](https://github.com/waku-org/js-waku/issues/2117)) ([7ad1d32](https://github.com/waku-org/js-waku/commit/7ad1d321ca7f17bfeb54618d03580c4223f1b485))
+* Lighten retry logic for LightPush ([#2182](https://github.com/waku-org/js-waku/issues/2182)) ([4049123](https://github.com/waku-org/js-waku/commit/4049123f147f24dfca35c584bd925d9892d4b518))
+* **lightPush:** Improve peer usage and improve readability ([#2155](https://github.com/waku-org/js-waku/issues/2155)) ([1d68526](https://github.com/waku-org/js-waku/commit/1d68526e724155f76bb786239f475a774115ee97))
+* Replace `waitForRemotePeers()` with `waku.waitForPeer()` method ([#2161](https://github.com/waku-org/js-waku/issues/2161)) ([75fcca4](https://github.com/waku-org/js-waku/commit/75fcca4cd99d6aabcbb14afab9332c98ddc6b74f))
+
+
+### Bug Fixes
+
+* Attempt to fix some of the Filter issues  ([#2183](https://github.com/waku-org/js-waku/issues/2183)) ([ded994f](https://github.com/waku-org/js-waku/commit/ded994f8ecd4ebec05cb9760f7eb3da273e5e02b))
+
 ## [0.0.27](https://github.com/waku-org/js-waku/compare/interfaces-v0.0.26...interfaces-v0.0.27) (2024-09-05)
 
 

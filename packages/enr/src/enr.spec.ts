@@ -1,5 +1,6 @@
+import { generateKeyPair } from "@libp2p/crypto/keys";
 import type { PeerId } from "@libp2p/interface";
-import { createSecp256k1PeerId } from "@libp2p/peer-id-factory";
+import { peerIdFromPrivateKey } from "@libp2p/peer-id";
 import { multiaddr } from "@multiformats/multiaddr";
 import * as secp from "@noble/secp256k1";
 import type { Waku2 } from "@waku/interfaces";
@@ -16,14 +17,13 @@ import {
   TransportProtocol,
   TransportProtocolPerIpVersion
 } from "./enr.js";
-import { getPrivateKeyFromPeerId } from "./peer_id.js";
 
 describe("ENR", function () {
   describe("Txt codec", () => {
     it("should encodeTxt and decodeTxt", async () => {
-      const peerId = await createSecp256k1PeerId();
+      const privateKey = await generateKeyPair("secp256k1");
+      const peerId = peerIdFromPrivateKey(privateKey);
       const enr = await EnrCreator.fromPeerId(peerId);
-      const privateKey = await getPrivateKeyFromPeerId(peerId);
       enr.setLocationMultiaddr(multiaddr("/ip4/18.223.219.100/udp/9000"));
       enr.multiaddrs = [
         multiaddr("/dns4/node-01.do-ams3.waku.test.status.im/tcp/443/wss"),
@@ -42,7 +42,7 @@ describe("ENR", function () {
         lightPush: false
       };
 
-      const txt = await EnrEncoder.toString(enr, privateKey);
+      const txt = await EnrEncoder.toString(enr, privateKey.raw);
       const enr2 = await EnrDecoder.fromString(txt);
 
       if (!enr.signature) throw "enr.signature is undefined";
@@ -115,13 +115,13 @@ describe("ENR", function () {
 
     it("should throw error - no id", async () => {
       try {
-        const peerId = await createSecp256k1PeerId();
+        const privateKey = await generateKeyPair("secp256k1");
+        const peerId = peerIdFromPrivateKey(privateKey);
         const enr = await EnrCreator.fromPeerId(peerId);
-        const privateKey = await getPrivateKeyFromPeerId(peerId);
         enr.setLocationMultiaddr(multiaddr("/ip4/18.223.219.100/udp/9000"));
 
         enr.set("id", new Uint8Array([0]));
-        const txt = await EnrEncoder.toString(enr, privateKey);
+        const txt = await EnrEncoder.toString(enr, privateKey.raw);
 
         await EnrDecoder.fromString(txt);
         assert.fail("Expect error here");
@@ -147,7 +147,7 @@ describe("ENR", function () {
   describe("Verify", () => {
     it("should throw error - no id", async () => {
       try {
-        const enr = await ENR.create({}, BigInt(0), new Uint8Array());
+        const enr = ENR.create({}, BigInt(0), new Uint8Array());
         enr.verify(new Uint8Array(), new Uint8Array());
         assert.fail("Expect error here");
       } catch (err: unknown) {
@@ -158,7 +158,7 @@ describe("ENR", function () {
 
     it("should throw error - invalid id", async () => {
       try {
-        const enr = await ENR.create(
+        const enr = ENR.create(
           { id: utf8ToBytes("v3") },
           BigInt(0),
           new Uint8Array()
@@ -173,7 +173,7 @@ describe("ENR", function () {
 
     it("should throw error - no public key", async () => {
       try {
-        const enr = await ENR.create(
+        const enr = ENR.create(
           { id: utf8ToBytes("v4") },
           BigInt(0),
           new Uint8Array()
@@ -204,7 +204,7 @@ describe("ENR", function () {
       privateKey = hexToBytes(
         "b71c71a67e1177ad4e901695e1b4b9ee17ae16c6668d313eac2f96dbcda3f291"
       );
-      record = await EnrCreator.fromPublicKey(secp.getPublicKey(privateKey));
+      record = EnrCreator.fromPublicKey(secp.getPublicKey(privateKey));
       record.setLocationMultiaddr(multiaddr("/ip4/127.0.0.1/udp/30303"));
       record.seq = seq;
       await EnrEncoder.toString(record, privateKey);
@@ -249,7 +249,7 @@ describe("ENR", function () {
       privateKey = hexToBytes(
         "b71c71a67e1177ad4e901695e1b4b9ee17ae16c6668d313eac2f96dbcda3f291"
       );
-      record = await EnrCreator.fromPublicKey(secp.getPublicKey(privateKey));
+      record = EnrCreator.fromPublicKey(secp.getPublicKey(privateKey));
     });
 
     it("should get / set UDP multiaddr", () => {
@@ -320,7 +320,8 @@ describe("ENR", function () {
     let enr: ENR;
 
     before(async function () {
-      peerId = await createSecp256k1PeerId();
+      const privateKey = await generateKeyPair("secp256k1");
+      peerId = peerIdFromPrivateKey(privateKey);
       enr = await EnrCreator.fromPeerId(peerId);
       enr.ip = ip4;
       enr.ip6 = ip6;
@@ -416,15 +417,16 @@ describe("ENR", function () {
   });
 
   describe("waku2 key round trip", () => {
-    let peerId;
+    let peerId: PeerId;
     let enr: ENR;
     let waku2Protocols: Waku2;
-    let privateKey: Uint8Array;
+    let privateKeyUint8Arr: Uint8Array;
 
     beforeEach(async function () {
-      peerId = await createSecp256k1PeerId();
+      const privateKey = await generateKeyPair("secp256k1");
+      privateKeyUint8Arr = privateKey.raw;
+      peerId = peerIdFromPrivateKey(privateKey);
       enr = await EnrCreator.fromPeerId(peerId);
-      privateKey = await getPrivateKeyFromPeerId(peerId);
       waku2Protocols = {
         relay: false,
         store: false,
@@ -436,7 +438,7 @@ describe("ENR", function () {
     it("should set field with all protocols disabled", async () => {
       enr.waku2 = waku2Protocols;
 
-      const txt = await EnrEncoder.toString(enr, privateKey);
+      const txt = await EnrEncoder.toString(enr, privateKeyUint8Arr);
       const decoded = (await EnrDecoder.fromString(txt)).waku2!;
 
       expect(decoded.relay).to.equal(false);
@@ -452,7 +454,7 @@ describe("ENR", function () {
       waku2Protocols.lightPush = true;
 
       enr.waku2 = waku2Protocols;
-      const txt = await EnrEncoder.toString(enr, privateKey);
+      const txt = await EnrEncoder.toString(enr, privateKeyUint8Arr);
       const decoded = (await EnrDecoder.fromString(txt)).waku2!;
 
       expect(decoded.relay).to.equal(true);
@@ -465,7 +467,7 @@ describe("ENR", function () {
       waku2Protocols.relay = true;
 
       enr.waku2 = waku2Protocols;
-      const txt = await EnrEncoder.toString(enr, privateKey);
+      const txt = await EnrEncoder.toString(enr, privateKeyUint8Arr);
       const decoded = (await EnrDecoder.fromString(txt)).waku2!;
 
       expect(decoded.relay).to.equal(true);
@@ -478,7 +480,7 @@ describe("ENR", function () {
       waku2Protocols.store = true;
 
       enr.waku2 = waku2Protocols;
-      const txt = await EnrEncoder.toString(enr, privateKey);
+      const txt = await EnrEncoder.toString(enr, privateKeyUint8Arr);
       const decoded = (await EnrDecoder.fromString(txt)).waku2!;
 
       expect(decoded.relay).to.equal(false);
@@ -491,7 +493,7 @@ describe("ENR", function () {
       waku2Protocols.filter = true;
 
       enr.waku2 = waku2Protocols;
-      const txt = await EnrEncoder.toString(enr, privateKey);
+      const txt = await EnrEncoder.toString(enr, privateKeyUint8Arr);
       const decoded = (await EnrDecoder.fromString(txt)).waku2!;
 
       expect(decoded.relay).to.equal(false);
@@ -504,7 +506,7 @@ describe("ENR", function () {
       waku2Protocols.lightPush = true;
 
       enr.waku2 = waku2Protocols;
-      const txt = await EnrEncoder.toString(enr, privateKey);
+      const txt = await EnrEncoder.toString(enr, privateKeyUint8Arr);
       const decoded = (await EnrDecoder.fromString(txt)).waku2!;
 
       expect(decoded.relay).to.equal(false);

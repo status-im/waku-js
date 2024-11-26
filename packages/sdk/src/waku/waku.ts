@@ -72,7 +72,7 @@ export class WakuNode implements IWaku {
 
   public constructor(
     public readonly pubsubTopics: PubsubTopic[],
-    options: WakuOptions,
+    options: CreateWakuNodeOptions,
     libp2p: Libp2p,
     protocolsEnabled: ProtocolsEnabled,
     relay?: IRelay
@@ -111,12 +111,16 @@ export class WakuNode implements IWaku {
     }
 
     if (protocolsEnabled.lightpush) {
-      const lightPush = wakuLightPush(this.connectionManager);
+      const lightPush = wakuLightPush(this.connectionManager, options);
       this.lightPush = lightPush(libp2p);
     }
 
     if (protocolsEnabled.filter) {
-      const filter = wakuFilter(this.connectionManager);
+      const filter = wakuFilter(
+        this.connectionManager,
+        this.lightPush,
+        options
+      );
       this.filter = filter(libp2p);
     }
 

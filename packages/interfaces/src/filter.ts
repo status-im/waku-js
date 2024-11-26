@@ -20,7 +20,7 @@ export type SubscriptionCallback<T extends IDecodedMessage> = {
 export type SubscribeOptions = {
   keepAlive?: number;
   pingsBeforePeerRenewed?: number;
-  maxMissedMessagesThreshold?: number;
+  enableLightPushFilterCheck?: boolean;
 };
 
 export interface ISubscription {

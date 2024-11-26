@@ -25,6 +25,23 @@
     * @waku/interfaces bumped from 0.0.16 to 0.0.17
     * @waku/utils bumped from 0.0.9 to 0.0.10
 
+## [0.0.16](https://github.com/waku-org/js-waku/compare/relay-v0.0.15...relay-v0.0.16) (2024-10-16)
+
+
+### Features
+
+* Replace `waitForRemotePeers()` with `waku.waitForPeer()` method ([#2161](https://github.com/waku-org/js-waku/issues/2161)) ([75fcca4](https://github.com/waku-org/js-waku/commit/75fcca4cd99d6aabcbb14afab9332c98ddc6b74f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @waku/core bumped from 0.0.32 to 0.0.33
+    * @waku/sdk bumped from 0.0.28 to 0.0.29
+    * @waku/interfaces bumped from 0.0.27 to 0.0.28
+    * @waku/utils bumped from 0.0.20 to 0.0.21
+
 ## [0.0.15](https://github.com/waku-org/js-waku/compare/relay-v0.0.14...relay-v0.0.15) (2024-09-05)
 
 

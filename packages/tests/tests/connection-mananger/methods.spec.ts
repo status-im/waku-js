@@ -1,6 +1,6 @@
+import { generateKeyPair } from "@libp2p/crypto/keys";
 import type { PeerId } from "@libp2p/interface";
-import { CustomEvent } from "@libp2p/interface";
-import { createSecp256k1PeerId } from "@libp2p/peer-id-factory";
+import { peerIdFromPrivateKey } from "@libp2p/peer-id";
 import {
   EPeersByDiscoveryEvents,
   LightNode,
@@ -26,7 +26,8 @@ describe("Public methods", function () {
     await tearDownNodes([], waku);
   });
   it("addEventListener with correct event", async function () {
-    const peerIdBootstrap = await createSecp256k1PeerId();
+    const privateKey = await generateKeyPair("secp256k1");
+    const peerIdBootstrap = peerIdFromPrivateKey(privateKey);
     await waku.libp2p.peerStore.save(peerIdBootstrap, {
       tags: {
         [Tags.BOOTSTRAP]: {
@@ -50,7 +51,8 @@ describe("Public methods", function () {
   });
 
   it("addEventListener with wrong event", async function () {
-    const peerIdBootstrap = await createSecp256k1PeerId();
+    const privateKey = await generateKeyPair("secp256k1");
+    const peerIdBootstrap = peerIdFromPrivateKey(privateKey);
     await waku.libp2p.peerStore.save(peerIdBootstrap, {
       tags: {
         [Tags.BOOTSTRAP]: {
@@ -83,7 +85,8 @@ describe("Public methods", function () {
   });
 
   it("removeEventListener with correct event", async function () {
-    const peerIdBootstrap = await createSecp256k1PeerId();
+    const privateKey = await generateKeyPair("secp256k1");
+    const peerIdBootstrap = peerIdFromPrivateKey(privateKey);
     await waku.libp2p.peerStore.save(peerIdBootstrap, {
       tags: {
         [Tags.BOOTSTRAP]: {
@@ -126,7 +129,8 @@ describe("Public methods", function () {
   });
 
   it("removeEventListener with wrong event", async function () {
-    const peerIdBootstrap = await createSecp256k1PeerId();
+    const privateKey = await generateKeyPair("secp256k1");
+    const peerIdBootstrap = peerIdFromPrivateKey(privateKey);
     await waku.libp2p.peerStore.save(peerIdBootstrap, {
       tags: {
         [Tags.BOOTSTRAP]: {
@@ -164,7 +168,8 @@ describe("Public methods", function () {
   });
 
   it("getPeersByDiscovery", async function () {
-    const peerIdBootstrap = await createSecp256k1PeerId();
+    const privateKey = await generateKeyPair("secp256k1");
+    const peerIdBootstrap = peerIdFromPrivateKey(privateKey);
     const peers_before = await waku.connectionManager.getPeersByDiscovery();
     expect(peers_before.DISCOVERED[Tags.BOOTSTRAP]).to.deep.eq([]);
 
@@ -202,7 +207,8 @@ describe("Public methods", function () {
   });
 
   it("listenerCount", async function () {
-    const peerIdBootstrap = await createSecp256k1PeerId();
+    const privateKey = await generateKeyPair("secp256k1");
+    const peerIdBootstrap = peerIdFromPrivateKey(privateKey);
     waku.connectionManager.addEventListener(
       EPeersByDiscoveryEvents.PEER_CONNECT_BOOTSTRAP,
       ({ detail: receivedPeerId }) => {
@@ -233,7 +239,8 @@ describe("Public methods", function () {
   });
 
   it("dispatchEvent via connectionManager", async function () {
-    const peerIdBootstrap = await createSecp256k1PeerId();
+    const privateKey = await generateKeyPair("secp256k1");
+    const peerIdBootstrap = peerIdFromPrivateKey(privateKey);
     await waku.libp2p.peerStore.save(peerIdBootstrap, {
       tags: {
         [Tags.BOOTSTRAP]: {
@@ -259,7 +266,8 @@ describe("Public methods", function () {
   });
 
   it("safeDispatchEvent", async function () {
-    const peerIdBootstrap = await createSecp256k1PeerId();
+    const privateKey = await generateKeyPair("secp256k1");
+    const peerIdBootstrap = peerIdFromPrivateKey(privateKey);
     await waku.libp2p.peerStore.save(peerIdBootstrap, {
       tags: {
         [Tags.BOOTSTRAP]: {
@@ -286,7 +294,8 @@ describe("Public methods", function () {
   });
 
   it("stop", async function () {
-    const peerIdBootstrap = await createSecp256k1PeerId();
+    const privateKey = await generateKeyPair("secp256k1");
+    const peerIdBootstrap = peerIdFromPrivateKey(privateKey);
     await waku.libp2p.peerStore.save(peerIdBootstrap, {
       tags: {
         [Tags.BOOTSTRAP]: {

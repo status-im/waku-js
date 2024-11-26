@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.0.6](https://github.com/waku-org/js-waku/compare/discovery-v0.0.5...discovery-v0.0.6) (2024-10-16)
+
+
+### Features
+
+* **filter:** Enhancing protocol peer management with mutex locks  ([#2137](https://github.com/waku-org/js-waku/issues/2137)) ([b2efce5](https://github.com/waku-org/js-waku/commit/b2efce5ec27807325685cc32f9333805e6321ac7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @waku/interfaces bumped from 0.0.27 to 0.0.28
+    * @waku/enr bumped from 0.0.26 to 0.0.27
+    * @waku/core bumped from 0.0.32 to 0.0.33
+    * @waku/utils bumped from 0.0.20 to 0.0.21
+
 ## [0.0.5](https://github.com/waku-org/js-waku/compare/discovery-v0.0.4...discovery-v0.0.5) (2024-09-05)
 
 

@@ -1,6 +1,5 @@
 import type { PeerId } from "@libp2p/interface";
 import type { PeerInfo } from "@libp2p/interface";
-import { CustomEvent } from "@libp2p/interface";
 import { multiaddr } from "@multiformats/multiaddr";
 import type { Multiaddr } from "@multiformats/multiaddr";
 import type { IWaku } from "@waku/interfaces";

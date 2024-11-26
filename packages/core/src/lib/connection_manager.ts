@@ -1,5 +1,5 @@
 import type { Peer, PeerId, PeerInfo, PeerStore } from "@libp2p/interface";
-import { CustomEvent, TypedEventEmitter } from "@libp2p/interface";
+import { TypedEventEmitter } from "@libp2p/interface";
 import {
   ConnectionManagerOptions,
   DiscoveryTrigger,

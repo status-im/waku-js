@@ -432,13 +432,9 @@ describe("Waku Light Push (named sharding): Multiple PubsubTopics", function () 
     const { failures: f1 } = await waku.lightPush.send(customEncoder1, {
       payload: utf8ToBytes("M1")
     });
-    const { failures: f2 } = await waku.lightPush.send(
-      customEncoder2,
-      {
-        payload: utf8ToBytes("M2")
-      },
-      { forceUseAllPeers: true }
-    );
+    const { failures: f2 } = await waku.lightPush.send(customEncoder2, {
+      payload: utf8ToBytes("M2")
+    });
 
     expect(f1).to.be.empty;
     expect(f2).to.be.empty;

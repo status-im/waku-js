@@ -1,6 +1,6 @@
 {
   "name": "@waku/interfaces",
-  "version": "0.0.27",
+  "version": "0.0.28",
   "description": "Definition of Waku interfaces",
   "types": "./dist/index.d.ts",
   "module": "./dist/index.js",
@@ -47,11 +47,11 @@
     "node": ">=20"
   },
   "devDependencies": {
-    "@chainsafe/libp2p-gossipsub": "^13.1.0",
+    "@chainsafe/libp2p-gossipsub": "^14.1.0",
     "@multiformats/multiaddr": "^12.0.0",
     "cspell": "^8.6.1",
     "npm-run-all": "^4.1.5",
-    "libp2p": "^1.8.1"
+    "libp2p": "2.1.8"
   },
   "files": [
     "dist",

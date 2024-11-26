@@ -1,4 +1,4 @@
-import { CustomEvent, TypedEventEmitter } from "@libp2p/interface";
+import { TypedEventEmitter } from "@libp2p/interface";
 import { peerDiscoverySymbol as symbol } from "@libp2p/interface";
 import type {
   IdentifyResult,

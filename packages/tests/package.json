@@ -50,8 +50,8 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@libp2p/interface-compliance-tests": "^5.4.9",
-    "@libp2p/peer-id": "^4.2.1",
+    "@libp2p/interface-compliance-tests": "^6.0.1",
+    "@libp2p/peer-id": "^5.0.1",
     "@waku/core": "*",
     "@waku/enr": "*",
     "@waku/interfaces": "*",
@@ -68,7 +68,8 @@
     "tail": "^2.2.6"
   },
   "devDependencies": {
-    "@libp2p/bootstrap": "^10.1.2",
+    "@libp2p/bootstrap": "^11.0.1",
+    "@libp2p/crypto": "^5.0.1",
     "@types/chai": "^4.3.11",
     "@types/dockerode": "^3.3.19",
     "@types/mocha": "^10.0.6",
@@ -76,16 +77,16 @@
     "@types/tail": "^2.2.3",
     "@waku/discovery": "*",
     "@waku/message-encryption": "*",
-    "@waku/sdk": "*",
     "@waku/relay": "*",
+    "@waku/sdk": "*",
     "allure-commandline": "^2.27.0",
     "allure-mocha": "^2.9.2",
     "chai": "^4.3.10",
     "cspell": "^8.6.1",
-    "datastore-core": "^9.2.7",
+    "datastore-core": "^10.0.2",
     "debug": "^4.3.4",
     "interface-datastore": "^8.2.10",
-    "libp2p": "^1.8.1",
+    "libp2p": "2.1.8",
     "mocha": "^10.3.0",
     "mocha-multi-reporters": "^1.5.1",
     "npm-run-all": "^4.1.5"

@@ -1,13 +1,12 @@
 import { TypedEventEmitter } from "@libp2p/interface";
 import {
-  CustomEvent,
   IdentifyResult,
   PeerDiscovery,
   PeerDiscoveryEvents,
   PeerInfo,
   Startable
 } from "@libp2p/interface";
-import { createFromJSON } from "@libp2p/peer-id-factory";
+import { peerIdFromString } from "@libp2p/peer-id";
 import { multiaddr } from "@multiformats/multiaddr";
 import {
   type Libp2pComponents,
@@ -58,7 +57,7 @@ export class LocalPeerCacheDiscovery
     );
 
     for (const { id: idStr, address } of this.peers) {
-      const peerId = await createFromJSON({ id: idStr });
+      const peerId = peerIdFromString(idStr);
       if (await this.components.peerStore.has(peerId)) continue;
 
       await this.components.peerStore.save(peerId, {

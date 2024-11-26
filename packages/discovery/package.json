@@ -1,6 +1,6 @@
 {
   "name": "@waku/discovery",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Contains various discovery mechanisms: DNS Discovery (EIP-1459, Peer Exchange, Local Peer Cache Discovery.",
   "types": "./dist/index.d.ts",
   "module": "./dist/index.js",
@@ -51,19 +51,18 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@waku/interfaces": "0.0.27",
+    "@waku/interfaces": "0.0.28",
     "@waku/proto": "^0.0.8",
-    "@waku/enr": "0.0.26",
-    "@waku/core": "0.0.32",
-    "@waku/utils": "0.0.20",
+    "@waku/enr": "0.0.27",
+    "@waku/core": "0.0.33",
+    "@waku/utils": "0.0.21",
     "debug": "^4.3.4",
     "dns-query": "^0.11.2",
     "hi-base32": "^0.5.1",
     "uint8arrays": "^5.0.1"
   },
   "devDependencies": {
-    "@libp2p/peer-id": "^4.2.1",
-    "@libp2p/peer-id-factory": "^4.2.1",
+    "@libp2p/peer-id": "5.0.1",
     "@multiformats/multiaddr": "^12.3.0",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-json": "^6.0.0",
@@ -81,7 +80,7 @@
     "sinon": "^18.0.0"
   },
   "peerDependencies": {
-    "@libp2p/interface": "^1.6.3"
+    "@libp2p/interface": "2.0.1"
   },
   "peerDependenciesMeta": {
     "@libp2p/interface": {

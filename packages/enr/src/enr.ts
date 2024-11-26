@@ -34,16 +34,16 @@ export class ENR extends RawEnr implements IEnr {
   public static readonly RECORD_PREFIX = "enr:";
   public peerId?: PeerId;
 
-  public static async create(
+  public static create(
     kvs: Record<ENRKey, ENRValue> = {},
     seq: SequenceNumber = BigInt(1),
     signature?: Uint8Array
-  ): Promise<ENR> {
+  ): ENR {
     const enr = new ENR(kvs, seq, signature);
     try {
       const publicKey = enr.publicKey;
       if (publicKey) {
-        enr.peerId = await createPeerIdFromPublicKey(publicKey);
+        enr.peerId = createPeerIdFromPublicKey(publicKey);
       }
     } catch (e) {
       log.error("Could not calculate peer id for ENR", e);

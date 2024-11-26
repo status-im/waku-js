@@ -64,6 +64,22 @@
   * devDependencies
     * @waku/interfaces bumped from 0.0.25 to 0.0.26
 
+## [0.1.17](https://github.com/waku-org/js-waku/compare/message-hash-v0.1.16...message-hash-v0.1.17) (2024-10-16)
+
+
+### Bug Fixes
+
+* Attempt to fix some of the Filter issues  ([#2183](https://github.com/waku-org/js-waku/issues/2183)) ([ded994f](https://github.com/waku-org/js-waku/commit/ded994f8ecd4ebec05cb9760f7eb3da273e5e02b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @waku/utils bumped from 0.0.20 to 0.0.21
+  * devDependencies
+    * @waku/interfaces bumped from 0.0.27 to 0.0.28
+
 ## [0.1.16](https://github.com/waku-org/js-waku/compare/message-hash-v0.1.15...message-hash-v0.1.16) (2024-09-05)
 
 

@@ -2,7 +2,7 @@ import { sha256 } from "@noble/hashes/sha256";
 import type { IDecodedMessage, IProtoMessage } from "@waku/interfaces";
 import { isDefined } from "@waku/utils";
 import {
-  bytesToUtf8,
+  bytesToHex,
   concat,
   numberToBytes,
   utf8ToBytes
@@ -56,6 +56,6 @@ export function messageHashStr(
   message: IProtoMessage | IDecodedMessage
 ): string {
   const hash = messageHash(pubsubTopic, message);
-  const hashStr = bytesToUtf8(hash);
+  const hashStr = bytesToHex(hash);
   return hashStr;
 }

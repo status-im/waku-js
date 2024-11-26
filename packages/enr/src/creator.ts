@@ -4,13 +4,12 @@ import { utf8ToBytes } from "@waku/utils/bytes";
 
 import { compressPublicKey } from "./crypto.js";
 import { ENR } from "./enr.js";
-import { getPublicKeyFromPeerId } from "./peer_id.js";
 
 export class EnrCreator {
   public static fromPublicKey(
     publicKey: Uint8Array,
     kvs: Record<ENRKey, ENRValue> = {}
-  ): Promise<ENR> {
+  ): ENR {
     // EIP-778 specifies that the key must be in compressed format, 33 bytes
     if (publicKey.length !== 33) {
       publicKey = compressPublicKey(publicKey);
@@ -28,7 +27,7 @@ export class EnrCreator {
   ): Promise<ENR> {
     switch (peerId.type) {
       case "secp256k1":
-        return EnrCreator.fromPublicKey(getPublicKeyFromPeerId(peerId), kvs);
+        return EnrCreator.fromPublicKey(peerId.publicKey.raw, kvs);
       default:
         throw new Error();
     }

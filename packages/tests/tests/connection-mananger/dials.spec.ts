@@ -1,6 +1,6 @@
+import { generateKeyPair } from "@libp2p/crypto/keys";
 import type { PeerInfo } from "@libp2p/interface";
-import { CustomEvent } from "@libp2p/interface";
-import { createSecp256k1PeerId } from "@libp2p/peer-id-factory";
+import { peerIdFromPrivateKey } from "@libp2p/peer-id";
 import { LightNode, Tags } from "@waku/interfaces";
 import { createLightNode } from "@waku/sdk";
 import { expect } from "chai";
@@ -49,10 +49,12 @@ describe("Dials", function () {
     it("should be called at least once on all `peer:discovery` events", async function () {
       const totalPeerIds = 5;
       for (let i = 1; i <= totalPeerIds; i++) {
+        const privateKey = await generateKeyPair("secp256k1");
+        const peerId = peerIdFromPrivateKey(privateKey);
         waku.libp2p.dispatchEvent(
           new CustomEvent<PeerInfo>("peer:discovery", {
             detail: {
-              id: await createSecp256k1PeerId(),
+              id: peerId,
               multiaddrs: []
             }
           })
@@ -110,7 +112,8 @@ describe("Dials", function () {
 
     describe("For bootstrap peers", function () {
       it("should be called for bootstrap peers", async function () {
-        const bootstrapPeer = await createSecp256k1PeerId();
+        const privateKey = await generateKeyPair("secp256k1");
+        const bootstrapPeer = peerIdFromPrivateKey(privateKey);
 
         // emit a peer:discovery event
         waku.libp2p.dispatchEvent(
@@ -130,11 +133,13 @@ describe("Dials", function () {
       });
 
       it("should not be called more than DEFAULT_MAX_BOOTSTRAP_PEERS_ALLOWED times for bootstrap peers", async function () {
+        const privateKey = await generateKeyPair("secp256k1");
+        const bootstrapPeer = peerIdFromPrivateKey(privateKey);
         // emit first peer:discovery event
         waku.libp2p.dispatchEvent(
           new CustomEvent<PeerInfo>("peer:discovery", {
             detail: {
-              id: await createSecp256k1PeerId(),
+              id: bootstrapPeer,
               multiaddrs: []
             }
           })
@@ -151,7 +156,7 @@ describe("Dials", function () {
           waku.libp2p.dispatchEvent(
             new CustomEvent<PeerInfo>("peer:discovery", {
               detail: {
-                id: await createSecp256k1PeerId(),
+                id: bootstrapPeer,
                 multiaddrs: []
               }
             })
@@ -168,7 +173,8 @@ describe("Dials", function () {
 
     describe("For peer-exchange peers", function () {
       it("should be called for peers with PEER_EXCHANGE tags", async function () {
-        const pxPeer = await createSecp256k1PeerId();
+        const privateKey = await generateKeyPair("secp256k1");
+        const pxPeer = peerIdFromPrivateKey(privateKey);
 
         // emit a peer:discovery event
         waku.libp2p.dispatchEvent(
@@ -194,10 +200,12 @@ describe("Dials", function () {
         // emit multiple peer:discovery events
         const totalPxPeers = 5;
         for (let i = 0; i < totalPxPeers; i++) {
+          const privateKey = await generateKeyPair("secp256k1");
+          const pxPeer = peerIdFromPrivateKey(privateKey);
           waku.libp2p.dispatchEvent(
             new CustomEvent<PeerInfo>("peer:discovery", {
               detail: {
-                id: await createSecp256k1PeerId(),
+                id: pxPeer,
                 multiaddrs: []
               }
             })

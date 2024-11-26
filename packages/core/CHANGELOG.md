@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The file is maintained by [Release Please](https://github.com/googleapis/release-please) based on [Conventional Commits](https://www.conventionalcommits.org) specification,
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.33](https://github.com/waku-org/js-waku/compare/core-v0.0.32...core-v0.0.33) (2024-10-16)
+
+
+### Features
+
+* **filter:** Enhancing protocol peer management with mutex locks  ([#2137](https://github.com/waku-org/js-waku/issues/2137)) ([b2efce5](https://github.com/waku-org/js-waku/commit/b2efce5ec27807325685cc32f9333805e6321ac7))
+* **lightPush:** Improve peer usage and improve readability ([#2155](https://github.com/waku-org/js-waku/issues/2155)) ([1d68526](https://github.com/waku-org/js-waku/commit/1d68526e724155f76bb786239f475a774115ee97))
+
+
+### Bug Fixes
+
+* Peer renewal connection drop & stream management ([#2145](https://github.com/waku-org/js-waku/issues/2145)) ([b93134a](https://github.com/waku-org/js-waku/commit/b93134a517006d3850ef13c1290194767ce40c21))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @waku/enr bumped from ^0.0.26 to ^0.0.27
+    * @waku/interfaces bumped from 0.0.27 to 0.0.28
+    * @waku/utils bumped from 0.0.20 to 0.0.21
+
 ## [0.0.32](https://github.com/waku-org/js-waku/compare/core-v0.0.31...core-v0.0.32) (2024-09-05)
 
 

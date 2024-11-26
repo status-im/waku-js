@@ -1,5 +1,4 @@
 import {
-  CustomEvent,
   PeerDiscovery,
   PeerDiscoveryEvents,
   TypedEventEmitter

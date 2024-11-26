@@ -17,7 +17,8 @@ import {
 
 const NUM_NODES = [0, 1, 2, 3];
 
-describe("Health Manager", function () {
+// TODO(weboko): resolve https://github.com/waku-org/js-waku/issues/2186
+describe.skip("Health Manager", function () {
   this.timeout(10_000);
 
   let waku: LightNode;

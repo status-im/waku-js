@@ -45,7 +45,7 @@ class Metadata extends BaseProtocol implements IMetadata {
       pubsubTopicsToShardInfo(this.pubsubTopics)
     );
 
-    const peer = await this.peerStore.get(peerId);
+    const peer = await this.libp2pComponents.peerStore.get(peerId);
     if (!peer) {
       return {
         shardInfo: null,

@@ -1,6 +1,7 @@
+import { generateKeyPair } from "@libp2p/crypto/keys";
 import type { PeerId, PeerInfo } from "@libp2p/interface";
-import { CustomEvent, TypedEventEmitter } from "@libp2p/interface";
-import { createSecp256k1PeerId } from "@libp2p/peer-id-factory";
+import { TypedEventEmitter } from "@libp2p/interface";
+import { peerIdFromPrivateKey } from "@libp2p/peer-id";
 import {
   EConnectionStateEvents,
   EPeersByDiscoveryEvents,
@@ -28,7 +29,8 @@ describe("Events", function () {
 
   describe("peer:discovery", () => {
     it("should emit `peer:discovery:bootstrap` event when a peer is discovered", async function () {
-      const peerIdBootstrap = await createSecp256k1PeerId();
+      const privateKey = await generateKeyPair("secp256k1");
+      const peerIdBootstrap = peerIdFromPrivateKey(privateKey);
 
       await waku.libp2p.peerStore.save(peerIdBootstrap, {
         tags: {
@@ -61,7 +63,8 @@ describe("Events", function () {
     });
 
     it("should emit `peer:discovery:peer-exchange` event when a peer is discovered", async function () {
-      const peerIdPx = await createSecp256k1PeerId();
+      const privateKey = await generateKeyPair("secp256k1");
+      const peerIdPx = peerIdFromPrivateKey(privateKey);
 
       await waku.libp2p.peerStore.save(peerIdPx, {
         tags: {
@@ -96,7 +99,8 @@ describe("Events", function () {
 
   describe("peer:connect", () => {
     it("should emit `peer:connected:bootstrap` event when a peer is connected", async function () {
-      const peerIdBootstrap = await createSecp256k1PeerId();
+      const privateKey = await generateKeyPair("secp256k1");
+      const peerIdBootstrap = peerIdFromPrivateKey(privateKey);
 
       await waku.libp2p.peerStore.save(peerIdBootstrap, {
         tags: {
@@ -123,7 +127,8 @@ describe("Events", function () {
       expect(await peerConnectedBootstrap).to.eq(true);
     });
     it("should emit `peer:connected:peer-exchange` event when a peer is connected", async function () {
-      const peerIdPx = await createSecp256k1PeerId();
+      const privateKey = await generateKeyPair("secp256k1");
+      const peerIdPx = peerIdFromPrivateKey(privateKey);
 
       await waku.libp2p.peerStore.save(peerIdPx, {
         tags: {
@@ -179,8 +184,10 @@ describe("Events", function () {
     });
 
     it(`should emit events and trasition isConnected state when has peers or no peers`, async function () {
-      const peerIdPx = await createSecp256k1PeerId();
-      const peerIdPx2 = await createSecp256k1PeerId();
+      const privateKey1 = await generateKeyPair("secp256k1");
+      const privateKey2 = await generateKeyPair("secp256k1");
+      const peerIdPx = peerIdFromPrivateKey(privateKey1);
+      const peerIdPx2 = peerIdFromPrivateKey(privateKey2);
 
       await waku.libp2p.peerStore.save(peerIdPx, {
         tags: {
@@ -249,7 +256,8 @@ describe("Events", function () {
       // have to recreate js-waku for it to pick up new globalThis
       waku = await createLightNode();
 
-      const peerIdPx = await createSecp256k1PeerId();
+      const privateKey = await generateKeyPair("secp256k1");
+      const peerIdPx = peerIdFromPrivateKey(privateKey);
 
       await waku.libp2p.peerStore.save(peerIdPx, {
         tags: {

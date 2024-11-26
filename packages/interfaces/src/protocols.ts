@@ -1,6 +1,6 @@
 import type { Libp2p } from "@libp2p/interface";
 import type { PeerId } from "@libp2p/interface";
-import type { Peer, PeerStore } from "@libp2p/interface";
+import type { Peer } from "@libp2p/interface";
 
 import type { CreateLibp2pOptions } from "./libp2p.js";
 import type { IDecodedMessage } from "./message.js";
@@ -16,7 +16,6 @@ export enum Protocols {
 
 export type IBaseProtocolCore = {
   multicodec: string;
-  peerStore: PeerStore;
   allPeers: () => Promise<Peer[]>;
   connectedPeers: () => Promise<Peer[]>;
   addLibp2pEventListener: Libp2p["addEventListener"];
@@ -25,7 +24,7 @@ export type IBaseProtocolCore = {
 
 export type IBaseProtocolSDK = {
   readonly connectedPeers: Peer[];
-  renewPeer: (peerToDisconnect: PeerId) => Promise<Peer>;
+  renewPeer: (peerToDisconnect: PeerId) => Promise<Peer | undefined>;
   readonly numPeersToUse: number;
 };
 
@@ -37,10 +36,6 @@ export type NetworkConfig = StaticSharding | AutoSharding;
  */
 export type ProtocolUseOptions = {
   /**
-   * Optional flag to enable auto-retry with exponential backoff
-   */
-  autoRetry?: boolean;
-  /**
    * Optional flag to force using all available peers
    */
   forceUseAllPeers?: boolean;
@@ -48,14 +43,6 @@ export type ProtocolUseOptions = {
    * Optional maximum number of attempts for exponential backoff
    */
   maxAttempts?: number;
-  /**
-   * Optional initial delay in milliseconds for exponential backoff
-   */
-  initialDelay?: number;
-  /**
-   * Optional maximum delay in milliseconds for exponential backoff
-   */
-  maxDelay?: number;
 };
 
 export type ProtocolCreateOptions = {

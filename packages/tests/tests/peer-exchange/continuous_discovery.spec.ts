@@ -1,5 +1,6 @@
+import { generateKeyPair } from "@libp2p/crypto/keys";
 import { type PeerId } from "@libp2p/interface";
-import { createSecp256k1PeerId } from "@libp2p/peer-id-factory";
+import { peerIdFromPrivateKey } from "@libp2p/peer-id";
 import { multiaddr } from "@multiformats/multiaddr";
 import { PeerExchangeDiscovery } from "@waku/discovery";
 import { IEnr, LightNode } from "@waku/interfaces";
@@ -92,7 +93,8 @@ describe("Peer Exchange Continuous Discovery", () => {
   });
 
   async function discoverPeerOnce(): Promise<void> {
-    peerId = await createSecp256k1PeerId();
+    const privateKey = await generateKeyPair("secp256k1");
+    peerId = peerIdFromPrivateKey(privateKey);
 
     const enr: IEnr = {
       peerId,
@@ -109,7 +111,8 @@ describe("Peer Exchange Continuous Discovery", () => {
 
     queryStub.resolves({ error: null, peerInfos: [peerInfo] });
 
-    randomPeerId = await createSecp256k1PeerId();
+    const privateKeyRandom = await generateKeyPair("secp256k1");
+    randomPeerId = peerIdFromPrivateKey(privateKeyRandom);
 
     const result = await (peerExchangeDiscovery as any).query(randomPeerId);
     expect(result.error).to.be.null;

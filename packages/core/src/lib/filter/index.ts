@@ -301,8 +301,11 @@ export class FilterCore extends BaseProtocol implements IBaseProtocolCore {
         () => {
           log.info("Receiving pipe closed.");
         },
-        (e) => {
-          log.error("Error with receiving pipe", e);
+        async (e) => {
+          log.error(
+            `Error with receiving pipe on peer:${connection.remotePeer.toString()} -- stream:${stream.id} -- protocol:${stream.protocol}: `,
+            e
+          );
         }
       );
     } catch (e) {

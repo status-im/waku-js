@@ -1,10 +1,10 @@
+import { generateKeyPair } from "@libp2p/crypto/keys";
 import type { IdentifyResult } from "@libp2p/interface";
 import { TypedEventEmitter } from "@libp2p/interface";
 import tests from "@libp2p/interface-compliance-tests/peer-discovery";
 import { prefixLogger } from "@libp2p/logger";
-import { createSecp256k1PeerId } from "@libp2p/peer-id-factory";
-import { createFromJSON } from "@libp2p/peer-id-factory";
-import { PersistentPeerStore } from "@libp2p/peer-store";
+import { peerIdFromPrivateKey, peerIdFromString } from "@libp2p/peer-id";
+import { persistentPeerStore } from "@libp2p/peer-store";
 import { multiaddr } from "@multiformats/multiaddr";
 import { Libp2pComponents } from "@waku/interfaces";
 import { LocalStoragePeerInfo } from "@waku/interfaces";
@@ -53,9 +53,9 @@ describe("Local Storage Discovery", function () {
   beforeEach(async function () {
     localStorage.clear();
     components = {
-      peerStore: new PersistentPeerStore({
+      peerStore: persistentPeerStore({
         events: new TypedEventEmitter(),
-        peerId: await createSecp256k1PeerId(),
+        peerId: await generateKeyPair("secp256k1").then(peerIdFromPrivateKey),
         datastore: new MemoryDatastore(),
         logger: prefixLogger("local_discovery.spec.ts")
       }),
@@ -103,9 +103,7 @@ describe("Local Storage Discovery", function () {
     it("should update peers in local storage on 'peer:identify' event", async () => {
       const newPeerIdentifyEvent = {
         detail: {
-          peerId: await createFromJSON({
-            id: mockPeers[1].id
-          }),
+          peerId: peerIdFromString(mockPeers[1].id.toString()),
           listenAddrs: [multiaddr(mockPeers[1].address)]
         }
       } as CustomEvent<IdentifyResult>;

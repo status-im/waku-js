@@ -72,6 +72,7 @@ const runTests = (strictNodeCheck: boolean): void => {
         const pushResponse = await waku.lightPush.send(TestEncoder, {
           payload: utf8ToBytes(generateMessageText(i))
         });
+
         expect(pushResponse.successes.length).to.eq(numServiceNodes);
       }
 

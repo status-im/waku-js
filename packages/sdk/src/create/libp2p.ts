@@ -59,12 +59,9 @@ export async function defaultLibp2p(
       : wss;
 
   return createLibp2p({
-    connectionManager: {
-      minConnections: 1
-    },
     transports: [webSockets({ filter: filter })],
     streamMuxers: [mplex()],
-    connectionEncryption: [noise()],
+    connectionEncrypters: [noise()],
     ...options,
     services: {
       identify: identify({

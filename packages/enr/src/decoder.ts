@@ -37,7 +37,7 @@ async function fromValues(values: Uint8Array[]): Promise<ENR> {
   }
   const _seq = decodeSeq(seq);
 
-  const enr = await ENR.create(obj, _seq, signature);
+  const enr = ENR.create(obj, _seq, signature);
   checkSignature(seq, kvs, enr, signature);
   return enr;
 }

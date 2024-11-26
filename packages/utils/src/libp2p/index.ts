@@ -1,8 +1,6 @@
-import type { Connection, Peer, PeerStore } from "@libp2p/interface";
-import { ShardInfo } from "@waku/interfaces";
+import type { Peer, PeerStore } from "@libp2p/interface";
 
 import { bytesToUtf8 } from "../bytes/index.js";
-import { decodeRelayShard } from "../common/relay_shard_codec.js";
 
 /**
  * Returns a pseudo-random peer that supports the given protocol.
@@ -68,40 +66,4 @@ export async function getPeersForProtocol(
     }
   });
   return peers;
-}
-
-export async function getConnectedPeersForProtocolAndShard(
-  connections: Connection[],
-  peerStore: PeerStore,
-  protocols: string[],
-  shardInfo?: ShardInfo
-): Promise<Peer[]> {
-  const openConnections = connections.filter(
-    (connection) => connection.status === "open"
-  );
-
-  const peerPromises = openConnections.map(async (connection) => {
-    const peer = await peerStore.get(connection.remotePeer);
-    const supportsProtocol = protocols.some((protocol) =>
-      peer.protocols.includes(protocol)
-    );
-
-    if (supportsProtocol) {
-      if (shardInfo) {
-        const encodedPeerShardInfo = peer.metadata.get("shardInfo");
-        const peerShardInfo =
-          encodedPeerShardInfo && decodeRelayShard(encodedPeerShardInfo);
-
-        if (peerShardInfo && shardInfo.clusterId === peerShardInfo.clusterId) {
-          return peer;
-        }
-      } else {
-        return peer;
-      }
-    }
-    return null;
-  });
-
-  const peersWithNulls = await Promise.all(peerPromises);
-  return peersWithNulls.filter((peer): peer is Peer => peer !== null);
 }

@@ -1,22 +1,14 @@
+import { generateKeyPair } from "@libp2p/crypto/keys";
 import type { Connection, Peer, PeerStore } from "@libp2p/interface";
-import { createSecp256k1PeerId } from "@libp2p/peer-id-factory";
-import { LightPushCodec } from "@waku/core";
+import { peerIdFromPrivateKey } from "@libp2p/peer-id";
 import {
-  ContentTopicInfo,
   createLightNode,
   Libp2pComponents,
   type LightNode,
-  Protocols,
-  ShardInfo,
   Tags,
   utf8ToBytes
 } from "@waku/sdk";
-import {
-  encodeRelayShard,
-  ensureShardingConfigured,
-  shardInfoToPubsubTopics
-} from "@waku/utils";
-import { getConnectedPeersForProtocolAndShard } from "@waku/utils/libp2p";
+import { encodeRelayShard } from "@waku/utils";
 import { expect } from "chai";
 import fc from "fast-check";
 import Sinon from "sinon";
@@ -24,413 +16,8 @@ import Sinon from "sinon";
 import {
   afterEachCustom,
   beforeEachCustom,
-  DefaultTestShardInfo,
-  delay,
-  makeLogFileName,
-  ServiceNode,
-  tearDownNodes
+  DefaultTestShardInfo
 } from "../src/index.js";
-
-describe("getConnectedPeersForProtocolAndShard", function () {
-  let waku: LightNode;
-  let serviceNode1: ServiceNode;
-  let serviceNode2: ServiceNode;
-  const contentTopic = "/test/2/waku-light-push/utf8";
-  const autoshardingClusterId = 6;
-
-  beforeEachCustom(this, async () => {
-    serviceNode1 = new ServiceNode(makeLogFileName(this.ctx) + "1");
-    serviceNode2 = new ServiceNode(makeLogFileName(this.ctx) + "2");
-  });
-
-  afterEachCustom(this, async () => {
-    await tearDownNodes([serviceNode1, serviceNode2], waku);
-  });
-
-  it("same cluster, same shard: nodes connect", async function () {
-    this.timeout(15000);
-
-    const shardInfo: ShardInfo = {
-      clusterId: 2,
-      shards: [2]
-    };
-
-    await serviceNode1.start({
-      discv5Discovery: true,
-      peerExchange: true,
-      clusterId: shardInfo.clusterId,
-      pubsubTopic: shardInfoToPubsubTopics(shardInfo),
-      lightpush: true,
-      relay: true
-    });
-
-    const serviceNodeMa = await serviceNode1.getMultiaddrWithId();
-
-    waku = await createLightNode({ networkConfig: shardInfo });
-    await waku.start();
-    await waku.libp2p.dialProtocol(serviceNodeMa, LightPushCodec);
-    await waku.waitForPeers([Protocols.LightPush]);
-    const peers = await getConnectedPeersForProtocolAndShard(
-      waku.libp2p.getConnections(),
-      waku.libp2p.peerStore,
-      waku.libp2p.getProtocols(),
-      ensureShardingConfigured(shardInfo).shardInfo
-    );
-    expect(peers.length).to.be.greaterThan(0);
-  });
-
-  it("same cluster, different shard: nodes don't connect", async function () {
-    this.timeout(15000);
-
-    const shardInfo1: ShardInfo = {
-      clusterId: 2,
-      shards: [1]
-    };
-
-    const shardInfo2: ShardInfo = {
-      clusterId: 2,
-      shards: [2]
-    };
-
-    // Separate shard
-    await serviceNode1.start({
-      discv5Discovery: true,
-      peerExchange: true,
-      clusterId: shardInfo1.clusterId,
-      pubsubTopic: shardInfoToPubsubTopics(shardInfo1),
-      lightpush: true,
-      relay: true
-    });
-
-    // Same shard
-    await serviceNode2.start({
-      discv5Discovery: true,
-      peerExchange: true,
-      clusterId: shardInfo2.clusterId,
-      pubsubTopic: shardInfoToPubsubTopics(shardInfo2),
-      lightpush: true,
-      relay: true
-    });
-
-    const serviceNode1Ma = await serviceNode1.getMultiaddrWithId();
-    const serviceNode2Ma = await serviceNode2.getMultiaddrWithId();
-
-    waku = await createLightNode({ networkConfig: shardInfo2 });
-    await waku.libp2p.dialProtocol(serviceNode1Ma, LightPushCodec);
-    await waku.libp2p.dialProtocol(serviceNode2Ma, LightPushCodec);
-    await waku.start();
-    await waku.waitForPeers([Protocols.LightPush]);
-
-    const peers = await getConnectedPeersForProtocolAndShard(
-      waku.libp2p.getConnections(),
-      waku.libp2p.peerStore,
-      waku.libp2p.getProtocols(),
-      ensureShardingConfigured(shardInfo2).shardInfo
-    );
-    expect(peers.length).to.be.equal(1);
-  });
-
-  it("different cluster, same shard: nodes don't connect", async function () {
-    this.timeout(15000);
-
-    const shardInfo1: ShardInfo = {
-      clusterId: 2,
-      shards: [1]
-    };
-
-    const shardInfo2: ShardInfo = {
-      clusterId: 3,
-      shards: [1]
-    };
-
-    // we start one node in a separate cluster
-    await serviceNode1.start({
-      discv5Discovery: true,
-      peerExchange: true,
-      clusterId: shardInfo1.clusterId,
-      pubsubTopic: shardInfoToPubsubTopics(shardInfo1),
-      lightpush: true,
-      relay: true
-    });
-
-    // and another node in the same cluster cluster as our node
-    await serviceNode2.start({
-      discv5Discovery: true,
-      peerExchange: true,
-      clusterId: shardInfo2.clusterId,
-      pubsubTopic: shardInfoToPubsubTopics(shardInfo2),
-      lightpush: true,
-      relay: true
-    });
-
-    const serviceNode1Ma = await serviceNode1.getMultiaddrWithId();
-    const serviceNode2Ma = await serviceNode2.getMultiaddrWithId();
-
-    waku = await createLightNode({ networkConfig: shardInfo2 });
-    await waku.libp2p.dialProtocol(serviceNode1Ma, LightPushCodec);
-    await delay(500);
-    await waku.libp2p.dialProtocol(serviceNode2Ma, LightPushCodec);
-
-    await waku.start();
-    await waku.waitForPeers([Protocols.LightPush]);
-
-    const peers = await getConnectedPeersForProtocolAndShard(
-      waku.libp2p.getConnections(),
-      waku.libp2p.peerStore,
-      waku.libp2p.getProtocols(),
-      shardInfo2
-    );
-    expect(peers.length).to.be.equal(1);
-  });
-
-  it("different cluster, different shard: nodes don't connect", async function () {
-    this.timeout(15000);
-
-    const shardInfo1: ShardInfo = {
-      clusterId: 2,
-      shards: [1]
-    };
-
-    const shardInfo2: ShardInfo = {
-      clusterId: 3,
-      shards: [2]
-    };
-
-    // we start one node in a separate cluster
-    await serviceNode1.start({
-      discv5Discovery: true,
-      peerExchange: true,
-      clusterId: shardInfo1.clusterId,
-      pubsubTopic: shardInfoToPubsubTopics(shardInfo1),
-      lightpush: true,
-      relay: true
-    });
-
-    // and another node in the same cluster cluster as our node
-    const serviceNode2 = new ServiceNode(makeLogFileName(this) + "2");
-    await serviceNode2.start({
-      discv5Discovery: true,
-      peerExchange: true,
-      clusterId: shardInfo2.clusterId,
-      pubsubTopic: shardInfoToPubsubTopics(shardInfo2),
-      lightpush: true,
-      relay: true
-    });
-
-    const serviceNodeMa1 = await serviceNode1.getMultiaddrWithId();
-    const serviceNodeMa2 = await serviceNode2.getMultiaddrWithId();
-
-    waku = await createLightNode({ networkConfig: shardInfo2 });
-    await waku.libp2p.dialProtocol(serviceNodeMa1, LightPushCodec);
-    await delay(500);
-    await waku.libp2p.dialProtocol(serviceNodeMa2, LightPushCodec);
-    await waku.start();
-    await waku.waitForPeers([Protocols.LightPush]);
-
-    const peers = await getConnectedPeersForProtocolAndShard(
-      waku.libp2p.getConnections(),
-      waku.libp2p.peerStore,
-      waku.libp2p.getProtocols(),
-      shardInfo2
-    );
-    expect(peers.length).to.be.equal(1);
-  });
-
-  it("same cluster, same shard: nodes connect (autosharding)", async function () {
-    this.timeout(15000);
-
-    const shardInfo: ContentTopicInfo = {
-      clusterId: autoshardingClusterId,
-      contentTopics: [contentTopic]
-    };
-
-    await serviceNode1.start({
-      discv5Discovery: true,
-      peerExchange: true,
-      clusterId: shardInfo.clusterId,
-      pubsubTopic: shardInfoToPubsubTopics(shardInfo),
-      contentTopic: [contentTopic],
-      lightpush: true,
-      relay: true
-    });
-
-    const serviceNodeMa = await serviceNode1.getMultiaddrWithId();
-
-    waku = await createLightNode({ networkConfig: shardInfo });
-    await waku.start();
-    await waku.libp2p.dialProtocol(serviceNodeMa, LightPushCodec);
-    await waku.waitForPeers([Protocols.LightPush]);
-    const peers = await getConnectedPeersForProtocolAndShard(
-      waku.libp2p.getConnections(),
-      waku.libp2p.peerStore,
-      waku.libp2p.getProtocols(),
-      ensureShardingConfigured(shardInfo).shardInfo
-    );
-    expect(peers.length).to.be.greaterThan(0);
-  });
-
-  it("same cluster, different shard: nodes connect (autosharding)", async function () {
-    this.timeout(15000);
-
-    const shardInfo1: ContentTopicInfo = {
-      clusterId: autoshardingClusterId,
-      contentTopics: [contentTopic]
-    };
-
-    const shardInfo2: ContentTopicInfo = {
-      clusterId: autoshardingClusterId,
-      contentTopics: ["/test/5/waku-light-push/utf8"]
-    };
-
-    // Separate shard
-    await serviceNode1.start({
-      discv5Discovery: true,
-      peerExchange: true,
-      clusterId: shardInfo1.clusterId,
-      pubsubTopic: shardInfoToPubsubTopics(shardInfo1),
-      contentTopic: [contentTopic],
-      lightpush: true,
-      relay: true
-    });
-
-    // Same shard
-    await serviceNode2.start({
-      discv5Discovery: true,
-      peerExchange: true,
-      clusterId: shardInfo2.clusterId,
-      pubsubTopic: shardInfoToPubsubTopics(shardInfo2),
-      contentTopic: [contentTopic],
-      lightpush: true,
-      relay: true
-    });
-
-    const serviceNode1Ma = await serviceNode1.getMultiaddrWithId();
-    const serviceNode2Ma = await serviceNode2.getMultiaddrWithId();
-
-    waku = await createLightNode({ networkConfig: shardInfo2 });
-    await waku.libp2p.dialProtocol(serviceNode1Ma, LightPushCodec);
-    await waku.libp2p.dialProtocol(serviceNode2Ma, LightPushCodec);
-
-    await waku.start();
-    await waku.waitForPeers([Protocols.LightPush]);
-
-    const peers = await getConnectedPeersForProtocolAndShard(
-      waku.libp2p.getConnections(),
-      waku.libp2p.peerStore,
-      waku.libp2p.getProtocols(),
-      ensureShardingConfigured(shardInfo2).shardInfo
-    );
-    expect(peers.length).to.be.equal(1);
-  });
-
-  it("different cluster, same shard: nodes don't connect (autosharding)", async function () {
-    this.timeout(15000);
-
-    const shardInfo1: ContentTopicInfo = {
-      clusterId: autoshardingClusterId,
-      contentTopics: [contentTopic]
-    };
-
-    const shardInfo2: ContentTopicInfo = {
-      clusterId: 2,
-      contentTopics: [contentTopic]
-    };
-
-    // we start one node in a separate cluster
-    await serviceNode1.start({
-      discv5Discovery: true,
-      peerExchange: true,
-      clusterId: shardInfo1.clusterId,
-      pubsubTopic: shardInfoToPubsubTopics(shardInfo1),
-      contentTopic: [contentTopic],
-      lightpush: true,
-      relay: true
-    });
-
-    // and another node in the same cluster cluster as our node
-    await serviceNode2.start({
-      discv5Discovery: true,
-      peerExchange: true,
-      clusterId: shardInfo2.clusterId,
-      pubsubTopic: shardInfoToPubsubTopics(shardInfo2),
-      lightpush: true,
-      relay: true
-    });
-
-    const serviceNode1Ma = await serviceNode1.getMultiaddrWithId();
-    const serviceNode2Ma = await serviceNode2.getMultiaddrWithId();
-
-    waku = await createLightNode({ networkConfig: shardInfo2 });
-    await waku.libp2p.dialProtocol(serviceNode1Ma, LightPushCodec);
-    await delay(500);
-    await waku.libp2p.dialProtocol(serviceNode2Ma, LightPushCodec);
-
-    await waku.start();
-    await waku.waitForPeers([Protocols.LightPush]);
-
-    const peers = await getConnectedPeersForProtocolAndShard(
-      waku.libp2p.getConnections(),
-      waku.libp2p.peerStore,
-      waku.libp2p.getProtocols(),
-      ensureShardingConfigured(shardInfo2).shardInfo
-    );
-    expect(peers.length).to.be.equal(1);
-  });
-
-  it("different cluster, different shard: nodes don't connect (autosharding)", async function () {
-    this.timeout(15000);
-
-    const shardInfo1: ContentTopicInfo = {
-      clusterId: autoshardingClusterId,
-      contentTopics: [contentTopic]
-    };
-
-    const shardInfo2: ContentTopicInfo = {
-      clusterId: 2,
-      contentTopics: ["/test/5/waku-light-push/utf8"]
-    };
-
-    // we start one node in a separate cluster
-    await serviceNode1.start({
-      discv5Discovery: true,
-      peerExchange: true,
-      clusterId: shardInfo1.clusterId,
-      pubsubTopic: shardInfoToPubsubTopics(shardInfo1),
-      contentTopic: [contentTopic],
-      lightpush: true,
-      relay: true
-    });
-
-    // and another node in the same cluster cluster as our node
-    const serviceNode2 = new ServiceNode(makeLogFileName(this) + "2");
-    await serviceNode2.start({
-      discv5Discovery: true,
-      peerExchange: true,
-      clusterId: shardInfo2.clusterId,
-      pubsubTopic: shardInfoToPubsubTopics(shardInfo2),
-      lightpush: true,
-      relay: true
-    });
-
-    const serviceNodeMa1 = await serviceNode1.getMultiaddrWithId();
-    const serviceNodeMa2 = await serviceNode2.getMultiaddrWithId();
-
-    waku = await createLightNode({ networkConfig: shardInfo2 });
-    await waku.libp2p.dialProtocol(serviceNodeMa1, LightPushCodec);
-    await delay(500);
-    await waku.libp2p.dialProtocol(serviceNodeMa2, LightPushCodec);
-    await waku.start();
-    await waku.waitForPeers([Protocols.LightPush]);
-
-    const peers = await getConnectedPeersForProtocolAndShard(
-      waku.libp2p.getConnections(),
-      waku.libp2p.peerStore,
-      waku.libp2p.getProtocols(),
-      ensureShardingConfigured(shardInfo2).shardInfo
-    );
-    expect(peers.length).to.be.equal(1);
-  });
-});
 
 describe("getPeers", function () {
   let peerStore: PeerStore;
@@ -468,14 +55,14 @@ describe("getPeers", function () {
       differentCodecPeerId,
       anotherDifferentCodecPeerId
     ] = await Promise.all([
-      createSecp256k1PeerId(),
-      createSecp256k1PeerId(),
-      createSecp256k1PeerId(),
-      createSecp256k1PeerId(),
-      createSecp256k1PeerId(),
-      createSecp256k1PeerId(),
-      createSecp256k1PeerId(),
-      createSecp256k1PeerId()
+      generateKeyPair("secp256k1").then(peerIdFromPrivateKey),
+      generateKeyPair("secp256k1").then(peerIdFromPrivateKey),
+      generateKeyPair("secp256k1").then(peerIdFromPrivateKey),
+      generateKeyPair("secp256k1").then(peerIdFromPrivateKey),
+      generateKeyPair("secp256k1").then(peerIdFromPrivateKey),
+      generateKeyPair("secp256k1").then(peerIdFromPrivateKey),
+      generateKeyPair("secp256k1").then(peerIdFromPrivateKey),
+      generateKeyPair("secp256k1").then(peerIdFromPrivateKey)
     ]);
 
     lowPingBootstrapPeer = {
@@ -566,7 +153,8 @@ describe("getPeers", function () {
       for (const peer of allPeers) {
         connections.push({
           status: "open",
-          remotePeer: peer.id
+          remotePeer: peer.id,
+          streams: [{ protocol: waku.lightPush.protocol.multicodec }]
         } as unknown as Connection);
       }
       return connections;

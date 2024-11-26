@@ -12,6 +12,20 @@
   * devDependencies
     * @waku/interfaces bumped from 0.0.16 to 0.0.17
 
+## [0.0.21](https://github.com/waku-org/js-waku/compare/utils-v0.0.20...utils-v0.0.21) (2024-10-16)
+
+
+### Features
+
+* **filter:** Enhancing protocol peer management with mutex locks  ([#2137](https://github.com/waku-org/js-waku/issues/2137)) ([b2efce5](https://github.com/waku-org/js-waku/commit/b2efce5ec27807325685cc32f9333805e6321ac7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @waku/interfaces bumped from 0.0.27 to 0.0.28
+
 ## [0.0.20](https://github.com/waku-org/js-waku/compare/utils-v0.0.19...utils-v0.0.20) (2024-09-05)
 
 

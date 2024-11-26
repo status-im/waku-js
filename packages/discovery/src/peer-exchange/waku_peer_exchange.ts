@@ -47,7 +47,7 @@ export class WakuPeerExchange extends BaseProtocol implements IPeerExchange {
       numPeers: BigInt(numPeers)
     });
 
-    const peer = await this.peerStore.get(peerId);
+    const peer = await this.components.peerStore.get(peerId);
     if (!peer) {
       return {
         peerInfos: null,
