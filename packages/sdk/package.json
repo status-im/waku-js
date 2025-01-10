@@ -92,14 +92,6 @@
     "rollup": "^4.12.0",
     "sinon": "^19.0.2"
   },
-  "peerDependencies": {
-    "@libp2p/bootstrap": "^10"
-  },
-  "peerDependenciesMeta": {
-    "@libp2p/bootstrap": {
-      "optional": true
-    }
-  },
   "files": [
     "dist",
     "bundle",
