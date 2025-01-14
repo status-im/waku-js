@@ -20,7 +20,6 @@ import { wakuFilter } from "../protocols/filter/index.js";
 import { wakuLightPush } from "../protocols/light_push/index.js";
 import { PeerManager } from "../protocols/peer_manager.js";
 import { wakuStore } from "../protocols/store/index.js";
-import { ReliabilityMonitorManager } from "../reliability_monitor/index.js";
 
 import { waitForRemotePeer } from "./wait_for_remote_peer.js";
 
@@ -178,7 +177,6 @@ export class WakuNode implements IWaku {
   }
 
   public async stop(): Promise<void> {
-    ReliabilityMonitorManager.stopAll();
     this.peerManager.stop();
     this.connectionManager.stop();
     await this.libp2p.stop();

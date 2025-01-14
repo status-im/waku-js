@@ -8,7 +8,6 @@ import type {
   IDecoder,
   IFilter,
   ILightPush,
-  IProtoMessage,
   Libp2p,
   PubsubTopic,
   SubscribeResult,
@@ -25,7 +24,6 @@ import {
 
 import { PeerManager } from "../peer_manager.js";
 
-import { MessageCache } from "./message_cache.js";
 import { Subscription } from "./subscription.js";
 import { buildConfig } from "./utils.js";
 
@@ -35,7 +33,6 @@ class Filter implements IFilter {
   public readonly protocol: FilterCore;
 
   private readonly config: FilterProtocolOptions;
-  private readonly messageCache: MessageCache;
   private activeSubscriptions = new Map<string, Subscription>();
 
   public constructor(
@@ -46,7 +43,6 @@ class Filter implements IFilter {
     config?: Partial<FilterProtocolOptions>
   ) {
     this.config = buildConfig(config);
-    this.messageCache = new MessageCache(libp2p);
 
     this.protocol = new FilterCore(
       async (pubsubTopic, wakuMessage, peerIdStr) => {
@@ -58,14 +54,6 @@ class Filter implements IFilter {
           return;
         }
 
-        if (this.messageCache.has(pubsubTopic, wakuMessage as IProtoMessage)) {
-          log.info(
-            `Skipping duplicate message for pubsubTopic:${pubsubTopic} peerId:${peerIdStr}`
-          );
-          return;
-        }
-
-        this.messageCache.set(pubsubTopic, wakuMessage as IProtoMessage);
         await subscription.processIncomingMessage(wakuMessage, peerIdStr);
       },
 
