@@ -56,6 +56,10 @@ jobs:
 
   browser:
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.48.0-jammy
+    env:
+      HOME: "/root"
     steps:
       - uses: actions/checkout@v3
         with: 
@@ -64,7 +68,6 @@ jobs:
         with:
           node-version: ${{ env.NODE_JS }}
       - uses: ./.github/actions/npm
-      - run: npx playwright install --with-deps
       - run: npm run build:esm
       - run: npm run test:browser
 

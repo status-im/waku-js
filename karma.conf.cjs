@@ -1,11 +1,11 @@
+const playwright = require("playwright");
 const webpack = require("webpack");
-const playwright = require('playwright');
 
 process.env.CHROME_BIN = playwright.chromium.executablePath();
 process.env.FIREFOX_BIN = playwright.firefox.executablePath();
 
 module.exports = function (config) {
-  config.set({
+  const configuration = {
     frameworks: ["webpack", "mocha"],
     files: ["src/**/!(node).spec.ts"],
     preprocessors: {
@@ -13,7 +13,21 @@ module.exports = function (config) {
     },
     envPreprocessor: ["CI"],
     reporters: ["progress"],
-    browsers: ["ChromeHeadless", "FirefoxHeadless"],
+    browsers: process.env.CI
+      ? ["ChromeHeadlessCI", "FirefoxHeadless"]
+      : ["ChromeHeadless", "FirefoxHeadless"],
+    customLaunchers: {
+      ChromeHeadlessCI: {
+        base: "ChromeHeadless",
+        flags: [
+          "--no-sandbox",
+          "--disable-gpu",
+          "--disable-dev-shm-usage",
+          "--disable-software-rasterizer",
+          "--disable-extensions"
+        ]
+      }
+    },
     singleRun: true,
     client: {
       mocha: {
@@ -28,7 +42,7 @@ module.exports = function (config) {
       plugins: [
         new webpack.DefinePlugin({
           "process.env.CI": process.env.CI || false,
-          "process.env.DISPLAY": "Browser",
+          "process.env.DISPLAY": "Browser"
         }),
         new webpack.ProvidePlugin({
           process: "process/browser.js"
@@ -45,5 +59,7 @@ module.exports = function (config) {
       stats: { warnings: false },
       devtool: "inline-source-map"
     }
-  });
+  };
+
+  config.set(configuration);
 };
