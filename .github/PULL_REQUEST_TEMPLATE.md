@@ -1,26 +1,30 @@
-## Problem
-
+### Problem / Description
 <!--
-Describe in details the problem or scenario that this PR is fixing.
-
-If this is a feature addition or change, then focus on the WHY you are making the change.
-E.g.: As a user of my dApp, I want to know that X happened when I do Y.
-
-If this is a bug fix, please describe why the old behavior was problematic.
+What problem does this PR address?
+Clearly describe the issue or feature the PR aims to solve.
 -->
 
-## Solution
+### Solution
+<!--
+Describe how the problem is solved in this PR.
+- Provide an overview of the changes made.
+- Highlight any significant design decisions or architectural changes.
+-->
 
-<!-- describe the new behavior --> 
+### Notes
+<!--
+Additional context, considerations, or information relevant to this PR.
+- Are there known limitations or trade-offs in the solution?
+- Include links to related discussions, documents, or references.
+-->
+- Resolves
+- Related to
 
-## Notes
+---
 
-<!-- Remove items that are not relevant -->
-
-- Resolves <issue number>
-- Related to <link to specs>
-
-Contribution checklist:
-- [ ] covered by unit tests;
-- [ ] covered by e2e test;
-- [ ] add `!` in title if breaks public API;
+#### Checklist
+- [ ] Code changes are **covered by unit tests**.
+- [ ] Code changes are **covered by e2e tests**, if applicable.
+- [ ] **Dogfooding has been performed**, if feasible.
+- [ ] A **test version has been published**, if required.
+- [ ] All **CI checks** pass successfully.
