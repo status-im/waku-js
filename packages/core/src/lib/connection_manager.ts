@@ -1,5 +1,6 @@
 import type { Peer, PeerId, PeerInfo, PeerStore } from "@libp2p/interface";
-import { TypedEventEmitter } from "@libp2p/interface";
+import { isPeerId, TypedEventEmitter } from "@libp2p/interface";
+import { Multiaddr, multiaddr, MultiaddrInput } from "@multiformats/multiaddr";
 import {
   ConnectionManagerOptions,
   DiscoveryTrigger,
@@ -219,15 +220,33 @@ export class ConnectionManager
     this.startNetworkStatusListener();
   }
 
-  private async dialPeer(peerId: PeerId): Promise<void> {
+  public async dialPeer(
+    peer: PeerId | MultiaddrInput,
+    protocolCodecs?: string[]
+  ): Promise<void> {
+    let peerId: PeerId | undefined;
+    const peerDialInfo = this.getDialablePeerInfo(peer);
+    const peerIdStr = isPeerId(peerDialInfo)
+      ? peerDialInfo.toString()
+      : peerDialInfo.getPeerId()!;
+
     this.currentActiveParallelDialCount += 1;
     let dialAttempt = 0;
     while (dialAttempt < this.options.maxDialAttemptsForPeer) {
       try {
-        log.info(
-          `Dialing peer ${peerId.toString()} on attempt ${dialAttempt + 1}`
-        );
-        await this.libp2p.dial(peerId);
+        log.info(`Dialing peer ${peerDialInfo} on attempt ${dialAttempt + 1}`);
+        protocolCodecs
+          ? await this.libp2p.dialProtocol(peerDialInfo, protocolCodecs)
+          : await this.libp2p.dial(peerDialInfo);
+
+        const conn = this.libp2p
+          .getConnections()
+          .find((conn) => conn.remotePeer.toString() === peerIdStr);
+        if (conn) {
+          peerId = conn.remotePeer;
+        } else {
+          throw new Error("Failed to dial multiaddr: no connection found");
+        }
 
         const tags = await this.getTagNamesForPeer(peerId);
         // add tag to connection describing discovery mechanism
@@ -246,21 +265,17 @@ export class ConnectionManager
       } catch (error) {
         if (error instanceof AggregateError) {
           // Handle AggregateError
-          log.error(
-            `Error dialing peer ${peerId.toString()} - ${error.errors}`
-          );
+          log.error(`Error dialing peer ${peerIdStr} - ${error.errors}`);
         } else {
           // Handle generic error
           log.error(
-            `Error dialing peer ${peerId.toString()} - ${
-              (error as any).message
-            }`
+            `Error dialing peer ${peerIdStr} - ${(error as any).message}`
           );
         }
-        this.dialErrorsForPeer.set(peerId.toString(), error);
+        this.dialErrorsForPeer.set(peerIdStr, error);
 
         dialAttempt++;
-        this.dialAttemptsForPeer.set(peerId.toString(), dialAttempt);
+        this.dialAttemptsForPeer.set(peerIdStr, dialAttempt);
       }
     }
 
@@ -271,7 +286,7 @@ export class ConnectionManager
     // If max dial attempts reached and dialing failed, delete the peer
     if (dialAttempt === this.options.maxDialAttemptsForPeer) {
       try {
-        const error = this.dialErrorsForPeer.get(peerId.toString());
+        const error = this.dialErrorsForPeer.get(peerIdStr);
 
         if (error) {
           let errorMessage;
@@ -288,20 +303,46 @@ export class ConnectionManager
           }
 
           log.info(
-            `Deleting undialable peer ${peerId.toString()} from peer store. Reason: ${errorMessage}`
+            `Deleting undialable peer ${peerIdStr} from peer store. Reason: ${errorMessage}`
           );
         }
 
-        this.dialErrorsForPeer.delete(peerId.toString());
-        await this.libp2p.peerStore.delete(peerId);
+        this.dialErrorsForPeer.delete(peerIdStr);
+        if (peerId) {
+          await this.libp2p.peerStore.delete(peerId);
+        }
 
         // if it was last available peer - attempt DNS discovery
         await this.attemptDnsDiscovery();
       } catch (error) {
         throw new Error(
-          `Error deleting undialable peer ${peerId.toString()} from peer store - ${error}`
+          `Error deleting undialable peer ${peerIdStr} from peer store - ${error}`
         );
       }
+    }
+  }
+
+  /**
+   * Internal utility to extract a PeerId or Multiaddr from a peer input.
+   * This is used internally by the connection manager to handle different peer input formats.
+   * @internal
+   * @param peer - The peer to extract information from, either as a PeerId object or multiaddr input
+   * @returns The peer information as either a PeerId, single Multiaddr, or array of Multiaddrs
+   * @throws Error if the multiaddr input is missing a peer ID
+   */
+  private getDialablePeerInfo(
+    peer: PeerId | MultiaddrInput
+  ): PeerId | Multiaddr {
+    if (isPeerId(peer)) {
+      return peer;
+    } else {
+      // peer is of MultiaddrInput type
+      const ma = multiaddr(peer);
+      const peerIdStr = ma.getPeerId();
+      if (!peerIdStr) {
+        throw new Error("Failed to dial multiaddr: missing peer ID");
+      }
+      return ma;
     }
   }
 
